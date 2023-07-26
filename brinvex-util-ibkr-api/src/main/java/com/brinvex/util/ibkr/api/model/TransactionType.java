@@ -90,32 +90,6 @@ public enum TransactionType {
             );
         }
     },
-    CAPITAL_DIVIDEND {
-        @Override
-        protected List<Predicate<Transaction>> predicates() {
-            return List.of(
-                    t -> t.getNetValue().compareTo(ZERO) > 0,
-                    t -> t.getSymbol() != null,
-                    t -> t.getQty().compareTo(ZERO) == 0,
-                    t -> t.getPrice() == null,
-                    t -> t.getFees().compareTo(ZERO) <= 0,
-                    t -> requireNonNullElse(t.getTax(), ZERO).compareTo(ZERO) == 0
-            );
-        }
-    },
-    STOCK_DIVIDEND {
-        @Override
-        protected List<Predicate<Transaction>> predicates() {
-            return List.of(
-                    t -> requireNonNullElse(t.getNetValue(), ZERO).compareTo(ZERO) >= 0,
-                    t -> t.getSymbol() != null,
-                    t -> t.getQty().compareTo(ZERO) >= 0,
-                    t -> t.getPrice() == null,
-                    t -> t.getFees().compareTo(ZERO) <= 0,
-                    t -> requireNonNullElse(t.getTax(), ZERO).compareTo(ZERO) == 0
-            );
-        }
-    },
 
     FX_BUY {
         @Override
@@ -165,21 +139,8 @@ public enum TransactionType {
                     t -> t.getTax().compareTo(ZERO) < 0
             );
         }
-    },
-
-    SPLIT {
-        @Override
-        protected List<Predicate<Transaction>> predicates() {
-            return List.of(
-                    t -> t.getNetValue().compareTo(ZERO) == 0,
-                    t -> t.getSymbol() != null,
-                    t -> t.getQty().compareTo(ZERO) != 0,
-                    t -> t.getPrice() == null,
-                    t -> t.getFees().compareTo(ZERO) == 0,
-                    t -> requireNonNullElse(t.getTax(), ZERO).compareTo(ZERO) == 0
-            );
-        }
-    };
+    }
+    ;
 
     private static final BigDecimal NUMBER_DIFF_TOLERANCE = new BigDecimal("0.005");
 
