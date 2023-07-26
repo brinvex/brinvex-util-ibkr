@@ -13,6 +13,8 @@ public interface IbkrService {
 
     FlexStatement parseStatements(Stream<String> statementContents);
 
+    Portfolio processStatements(Collection<Path> statementPaths);
+
     Portfolio processStatements(Stream<String> statementContents);
 
     Portfolio processStatements(Portfolio ptf, Stream<String> statementContents);

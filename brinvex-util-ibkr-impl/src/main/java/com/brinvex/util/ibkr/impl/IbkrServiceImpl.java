@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -140,6 +141,20 @@ public class IbkrServiceImpl implements IbkrService {
         );
 
         return result;
+    }
+
+    @Override
+    public Portfolio processStatements(Collection<Path> statementPaths) {
+        Stream<String> statementContentStream = statementPaths
+                .stream()
+                .map(filePath -> {
+                    try {
+                        return Files.readString(filePath);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        return processStatements(statementContentStream);
     }
 
     @Override
