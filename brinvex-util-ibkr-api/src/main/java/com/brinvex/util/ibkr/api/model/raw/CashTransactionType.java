@@ -1,6 +1,6 @@
 package com.brinvex.util.ibkr.api.model.raw;
 
-public enum RawTransactionType {
+public enum CashTransactionType {
 
     Deposits_Withdrawals,
 
@@ -9,7 +9,5 @@ public enum RawTransactionType {
     Withholding_Tax,
 
     Other_Fees,
-
-    ExchTrade,
 
 }

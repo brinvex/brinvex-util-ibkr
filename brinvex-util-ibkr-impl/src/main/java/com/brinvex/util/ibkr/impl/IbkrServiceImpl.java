@@ -2,8 +2,10 @@ package com.brinvex.util.ibkr.impl;
 
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
+import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
-import com.brinvex.util.ibkr.api.model.raw.RawTransaction;
+import com.brinvex.util.ibkr.api.model.raw.Trade;
+import com.brinvex.util.ibkr.api.model.raw.TradeConfirm;
 import com.brinvex.util.ibkr.api.service.IbkrService;
 import com.brinvex.util.ibkr.api.service.exception.IbkrServiceException;
 import com.brinvex.util.ibkr.impl.parser.ActivityFlexStatementXmlParser;
@@ -14,16 +16,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -32,7 +33,7 @@ import static java.lang.String.format;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 
-@SuppressWarnings({"GrazieInspection", "StructuralWrap"})
+@SuppressWarnings({"GrazieInspection"})
 public class IbkrServiceImpl implements IbkrService {
 
     private final ActivityFlexStatementXmlParser activityFlexStatementXmlParser;
@@ -98,8 +99,9 @@ public class IbkrServiceImpl implements IbkrService {
             result.setToDate(rawTranList0.getToDate());
         }
 
-        Set<RawTransaction> rawTrans = new LinkedHashSet<>();
-        Set<String> rawTranKeys = new LinkedHashSet<>();
+        TreeMap<String, CashTransaction> rawCashTrans = new TreeMap<>();
+        TreeMap<String, Trade> rawTrades = new TreeMap<>();
+        TreeMap<String, TradeConfirm> rawTradeConfirms = new TreeMap<>();
 
         for (FlexStatement rawTranList : rawFlexStatements) {
             LocalDate fromDate = rawTranList.getFromDate();
@@ -122,23 +124,20 @@ public class IbkrServiceImpl implements IbkrService {
                 result.setToDate(toDate);
             }
 
-            for (RawTransaction rawTransaction : rawTranList.getTransactions()) {
-                String tradeKey = "%s/%s/%s".formatted(
-                        rawTransaction.getTradeID(),
-                        rawTransaction.getTransactionID(),
-                        rawTransaction.getIbOrderID()
-                );
-                if (rawTranKeys.add(tradeKey)) {
-                    rawTrans.add(rawTransaction);
-                }
+            for (CashTransaction rawCashTran : rawTranList.getCashTransactions()) {
+                rawCashTrans.putIfAbsent(TranIdGenerator.getId(rawCashTran), rawCashTran);
+            }
+            for (Trade rawTrade : rawTranList.getTrades()) {
+                rawTrades.putIfAbsent(TranIdGenerator.getId(rawTrade), rawTrade);
+            }
+            for (TradeConfirm rawTradeConfirm : rawTranList.getTradeConfirms()) {
+                rawTradeConfirms.putIfAbsent(TranIdGenerator.getId(rawTradeConfirm), rawTradeConfirm);
             }
         }
 
-        result.getTransactions().addAll(rawTrans
-                .stream()
-                .sorted(comparing(RawTransaction::getDateTime).thenComparing(RawTransaction::getTransactionID))
-                .collect(toCollection(ArrayList::new))
-        );
+        result.getCashTransactions().addAll(rawCashTrans.values());
+        result.getTrades().addAll(rawTrades.values());
+        result.getTradeConfirms().addAll(rawTradeConfirms.values());
 
         return result;
     }
@@ -166,7 +165,9 @@ public class IbkrServiceImpl implements IbkrService {
     @SuppressWarnings("DuplicatedCode")
     public Portfolio processStatements(Portfolio ptf, Stream<String> statementContents) {
         FlexStatement flexStatement = parseStatements(statementContents);
-        List<RawTransaction> rawTransactions = flexStatement.getTransactions();
+        List<CashTransaction> rawCashTrans = flexStatement.getCashTransactions();
+        List<Trade> rawTrades = flexStatement.getTrades();
+        List<TradeConfirm> rawTradeConfirms = flexStatement.getTradeConfirms();
 
         String accountId = flexStatement.getAccountId();
         LocalDate periodFrom = flexStatement.getFromDate();
@@ -191,13 +192,23 @@ public class IbkrServiceImpl implements IbkrService {
         }
 
         List<Transaction> ptfTrans = ptf.getTransactions();
-        if (!ptfTrans.isEmpty()) {
-            Transaction prevTran = ptfTrans.get(ptfTrans.size() - 1);
-            LocalDateTime lastPtfTranDate = prevTran.getDate().toLocalDateTime();
-            rawTransactions.removeIf(rawTran -> !rawTran.getDateTime().isAfter(lastPtfTranDate));
-        }
+        Set<String> tranIds = ptfTrans.stream().map(Transaction::getId).collect(toCollection(HashSet::new));
 
-        List<Transaction> newTrans = transactionMapper.mapTransactions(rawTransactions);
+        List<Transaction> newCashTrans = transactionMapper.mapCashTransactions(tranIds, rawCashTrans);
+        tranIds.addAll(newCashTrans.stream().map(Transaction::getId).toList());
+
+        List<Transaction> newTrades = transactionMapper.mapTrades(tranIds, rawTrades);
+        tranIds.addAll(newTrades.stream().map(Transaction::getId).toList());
+
+        List<Transaction> newTradeConfirms = transactionMapper.mapTradeConfirms(tranIds, rawTradeConfirms);
+        tranIds.addAll(newTradeConfirms.stream().map(Transaction::getId).toList());
+
+        List<Transaction> newTrans = new ArrayList<>();
+        newTrans.addAll(newCashTrans);
+        newTrans.addAll(newTrades);
+        newTrans.addAll(newTradeConfirms);
+        newTrans.sort(comparing(Transaction::getId));
+
         for (Transaction newTran : newTrans) {
             ptfTrans.add(newTran);
             ptfManager.applyTransaction(ptf, newTran);

@@ -4,13 +4,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.StringJoiner;
 
 public class Transaction implements Serializable {
 
     private String id;
 
-    private ZonedDateTime date;
+    private Temporal date;
 
     private TransactionType type;
 
@@ -46,11 +47,11 @@ public class Transaction implements Serializable {
         this.id = id;
     }
 
-    public ZonedDateTime getDate() {
+    public Temporal getDate() {
         return date;
     }
 
-    public void setDate(ZonedDateTime date) {
+    public void setDate(Temporal date) {
         this.date = date;
     }
 

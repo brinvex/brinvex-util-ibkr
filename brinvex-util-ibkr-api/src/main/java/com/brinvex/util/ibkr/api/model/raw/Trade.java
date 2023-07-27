@@ -6,11 +6,10 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.StringJoiner;
 
-public class RawTransaction implements Serializable {
-
-    private String accountId;
+public class Trade implements Activity, Serializable {
 
     private Currency currency;
 
@@ -32,13 +31,13 @@ public class RawTransaction implements Serializable {
 
     private LocalDate reportDate;
 
-    private LocalDateTime dateTime;
+    private ZonedDateTime dateTime;
 
     private LocalDate tradeDate;
 
     private LocalDate settleDateTarget;
 
-    private RawTransactionType type;
+    private TradeType transactionType;
 
     private String exchange;
 
@@ -66,20 +65,14 @@ public class RawTransaction implements Serializable {
 
     private String ibOrderID;
 
-    private LocalDateTime orderTime;
+    private ZonedDateTime orderTime;
 
-    private String actionId;
-
-    private LocalDate settleDate;
-
-    private BigDecimal amount;
-
-    public String getAccountId() {
-        return accountId;
+    public ZonedDateTime getDateTime() {
+        return dateTime;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setDateTime(ZonedDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 
     public Currency getCurrency() {
@@ -162,14 +155,6 @@ public class RawTransaction implements Serializable {
         this.reportDate = reportDate;
     }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
-    }
-
     public LocalDate getTradeDate() {
         return tradeDate;
     }
@@ -186,12 +171,12 @@ public class RawTransaction implements Serializable {
         this.settleDateTarget = settleDateTarget;
     }
 
-    public RawTransactionType getType() {
-        return type;
+    public TradeType getTransactionType() {
+        return transactionType;
     }
 
-    public void setType(RawTransactionType type) {
-        this.type = type;
+    public void setTransactionType(TradeType transactionType) {
+        this.transactionType = transactionType;
     }
 
     public String getExchange() {
@@ -298,43 +283,18 @@ public class RawTransaction implements Serializable {
         this.ibOrderID = ibOrderID;
     }
 
-    public LocalDateTime getOrderTime() {
+    public ZonedDateTime getOrderTime() {
         return orderTime;
     }
 
-    public void setOrderTime(LocalDateTime orderTime) {
+    public void setOrderTime(ZonedDateTime orderTime) {
         this.orderTime = orderTime;
-    }
-
-
-    public String getActionId() {
-        return actionId;
-    }
-
-    public void setActionId(String actionId) {
-        this.actionId = actionId;
-    }
-
-    public LocalDate getSettleDate() {
-        return settleDate;
-    }
-
-    public void setSettleDate(LocalDate settleDate) {
-        this.settleDate = settleDate;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RawTransaction.class.getSimpleName() + "[", "]")
-                .add("accountId='" + accountId + "'")
+        return new StringJoiner(", ", Trade.class.getSimpleName() + "[", "]")
+                .add("dateTime=" + dateTime)
                 .add("currency=" + currency)
                 .add("assetCategory=" + assetCategory)
                 .add("symbol='" + symbol + "'")
@@ -345,10 +305,9 @@ public class RawTransaction implements Serializable {
                 .add("listingExchange='" + listingExchange + "'")
                 .add("tradeID='" + tradeID + "'")
                 .add("reportDate=" + reportDate)
-                .add("dateTime=" + dateTime)
                 .add("tradeDate=" + tradeDate)
                 .add("settleDateTarget=" + settleDateTarget)
-                .add("transactionType=" + type)
+                .add("transactionType=" + transactionType)
                 .add("exchange='" + exchange + "'")
                 .add("quantity=" + quantity)
                 .add("tradePrice=" + tradePrice)
@@ -363,9 +322,6 @@ public class RawTransaction implements Serializable {
                 .add("transactionID='" + transactionID + "'")
                 .add("ibOrderID='" + ibOrderID + "'")
                 .add("orderTime=" + orderTime)
-                .add("actionId='" + actionId + "'")
-                .add("settleDate=" + settleDate)
-                .add("amount=" + amount)
                 .toString();
     }
 }

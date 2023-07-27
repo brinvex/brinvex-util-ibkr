@@ -2,7 +2,7 @@ package com.brinvex.util.ibkr.api.model.raw;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -15,9 +15,13 @@ public class FlexStatement implements Serializable {
 
     private LocalDate toDate;
 
-    private LocalDateTime whenGenerated;
+    private ZonedDateTime whenGenerated;
 
-    private final List<RawTransaction> transactions = new ArrayList<>();
+    private final List<CashTransaction> cashTransactions = new ArrayList<>();
+
+    private final List<Trade> trades = new ArrayList<>();
+
+    private final List<TradeConfirm> tradeConfirms = new ArrayList<>();
 
     public String getAccountId() {
         return accountId;
@@ -43,17 +47,26 @@ public class FlexStatement implements Serializable {
         this.toDate = toDate;
     }
 
-    public LocalDateTime getWhenGenerated() {
+    public ZonedDateTime getWhenGenerated() {
         return whenGenerated;
     }
 
-    public void setWhenGenerated(LocalDateTime whenGenerated) {
+    public void setWhenGenerated(ZonedDateTime whenGenerated) {
         this.whenGenerated = whenGenerated;
     }
 
-    public List<RawTransaction> getTransactions() {
-        return transactions;
+    public List<CashTransaction> getCashTransactions() {
+        return cashTransactions;
     }
+
+    public List<Trade> getTrades() {
+        return trades;
+    }
+
+    public List<TradeConfirm> getTradeConfirms() {
+        return tradeConfirms;
+    }
+
 
     @Override
     public String toString() {
@@ -62,7 +75,9 @@ public class FlexStatement implements Serializable {
                 .add("fromDate=" + fromDate)
                 .add("toDate=" + toDate)
                 .add("whenGenerated=" + whenGenerated)
-                .add("transactions=" + transactions)
+                .add("cashTransactions=" + cashTransactions)
+                .add("trades=" + trades)
+                .add("tradeConfirms=" + tradeConfirms)
                 .toString();
     }
 }
