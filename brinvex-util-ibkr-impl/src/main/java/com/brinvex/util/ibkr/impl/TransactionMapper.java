@@ -64,9 +64,6 @@ public class TransactionMapper {
                 continue;
             }
             var tranId = TranIdGenerator.getId(rawCashTran);
-            if (oldTranIds.contains(tranId)) {
-                continue;
-            }
             if (!newTranIds.add(tranId)) {
                 throw new IbkrServiceException("ID collision: %s, %s".formatted(tranId, rawCashTran));
             }
@@ -151,7 +148,7 @@ public class TransactionMapper {
                 throw new IbkrServiceException("Not yet implemented tran=%s".formatted(rawCashTran));
             }
         }
-        return resultTrans;
+        return resultTrans.stream().filter(t -> !oldTranIds.contains(t.getId())).toList();
     }
 
     public List<Transaction> mapTrades(
@@ -170,9 +167,6 @@ public class TransactionMapper {
         Set<String> newTranIds = new HashSet<>();
         for (Trade rawTrade : rawTrades) {
             String tranId = TranIdGenerator.getId(rawTrade);
-            if (oldTranIds.contains(tranId)) {
-                continue;
-            }
             if (!newTranIds.add(tranId)) {
                 throw new IbkrServiceException("ID collision: %s, %s".formatted(tranId, rawTrade));
             }
@@ -255,8 +249,7 @@ public class TransactionMapper {
                 throw new IbkrServiceException("Not yet implemented tran=%s".formatted(rawTrade));
             }
         }
-
-        return resultTrans;
+        return resultTrans.stream().filter(t -> !oldTranIds.contains(t.getId())).toList();
     }
     public List<Transaction> mapTradeConfirms(
             Set<String> oldTranIds,

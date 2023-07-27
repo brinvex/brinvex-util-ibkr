@@ -82,6 +82,27 @@ class IbkrServiceTest {
     }
 
     @Test
+    void processStatements3() throws IOException {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = List.of(
+                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20230101_20230726.xml")),
+                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20230101_20230726.xml"))
+        );
+        Portfolio ptf = null;
+        for (Path activityReportPath : activityReportPaths) {
+            String content = Files.readString(activityReportPath);
+            ptf = ibkrService.processStatements(ptf, Stream.of(content));
+        }
+        assertNotNull(ptf);
+
+        assertEquals(2, ptf.getCash().size());
+        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("482.502129806")));
+        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.2340287")));
+
+        assertEquals(13, ptf.getPositions().size());
+    }
+
+    @Test
     void fetch() throws IOException {
         Path credentialsPath = testHelper.getTestFilePath(s -> s.contains("IBKR_Flex_credentials_LR"));
         if (credentialsPath != null) {
@@ -90,8 +111,9 @@ class IbkrServiceTest {
             String activityFlexQueryId = credentials.get(1);
             String tradeConfirmFlexQueryId = credentials.get(2);
             IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-            String statement = ibkrService.fetchStatement(token, activityFlexQueryId);
-            Portfolio ptf = ibkrService.processStatements(Stream.of(statement));
+            String activityStatement = ibkrService.fetchStatement(token, activityFlexQueryId);
+            String tradeConfirmStatement = ibkrService.fetchStatement(token, tradeConfirmFlexQueryId);
+            Portfolio ptf = ibkrService.processStatements(Stream.of(activityStatement, tradeConfirmStatement));
             assertNotNull(ptf);
         }
     }
