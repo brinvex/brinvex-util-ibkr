@@ -5,6 +5,7 @@ import com.brinvex.util.ibkr.api.model.Currency;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.StringJoiner;
 
 public class EquitySummary implements Serializable {
 
@@ -66,5 +67,18 @@ public class EquitySummary implements Serializable {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
+    }
+
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", EquitySummary.class.getSimpleName() + "[", "]")
+                .add("reportDate=" + reportDate)
+                .add("currency=" + currency)
+                .add("cash=" + cash)
+                .add("stock=" + stock)
+                .add("dividendAccruals=" + dividendAccruals)
+                .add("total=" + total)
+                .toString();
     }
 }
