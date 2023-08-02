@@ -78,7 +78,7 @@ public class PortfolioManager {
         }
         Country country = tran.getCountry();
         String symbol = tran.getSymbol();
-        Currency ccy = tran.getCcy();
+        Currency ccy = tran.getCurrency();
         BigDecimal netValue = tran.getNetValue();
         BigDecimal qty = tran.getQty();
 

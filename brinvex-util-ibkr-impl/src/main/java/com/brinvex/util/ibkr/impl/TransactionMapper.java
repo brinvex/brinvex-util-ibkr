@@ -81,7 +81,7 @@ public class TransactionMapper {
                 tran.setDate(dateTime);
                 tran.setType(amount.compareTo(ZERO) > 0 ? TransactionType.DEPOSIT : TransactionType.WITHDRAWAL);
                 tran.setQty(ZERO);
-                tran.setCcy(ccy);
+                tran.setCurrency(ccy);
                 tran.setGrossValue(amount);
                 tran.setNetValue(amount.add(fees));
                 tran.setFees(fees);
@@ -108,7 +108,7 @@ public class TransactionMapper {
                     tran.setCountry(detectCountryByExchange(rawCashTran.getListingExchange()));
                     tran.setIsin(stripToNull(rawCashTran.getIsin()));
                     tran.setSymbol(stripToNull(rawCashTran.getSymbol()));
-                    tran.setCcy(ccy);
+                    tran.setCurrency(ccy);
                     tran.setType(TransactionType.CASH_DIVIDEND);
                     tran.setGrossValue(rawCashTran.getAmount());
                     tran.setQty(ZERO);
@@ -135,7 +135,7 @@ public class TransactionMapper {
                 tran.setCountry(detectCountryByExchange(rawCashTran.getListingExchange()));
                 tran.setIsin(stripToNull(rawCashTran.getIsin()));
                 tran.setSymbol(stripToNull(rawCashTran.getSymbol()));
-                tran.setCcy(ccy);
+                tran.setCurrency(ccy);
                 tran.setType(TransactionType.FEE);
                 tran.setGrossValue(ZERO);
                 tran.setQty(ZERO);
@@ -185,7 +185,7 @@ public class TransactionMapper {
                 tran.setCountry(detectCountryByExchange(rawTrade.getListingExchange()));
                 tran.setIsin(stripToNull(rawTrade.getIsin()));
                 tran.setSymbol(stripToNull(rawTrade.getSymbol()));
-                tran.setCcy(ccy);
+                tran.setCurrency(ccy);
                 tran.setType(rawTrade.getBuySell() == BuySell.BUY ? TransactionType.BUY : TransactionType.SELL);
                 tran.setQty(rawTrade.getQuantity());
                 tran.setPrice(rawTrade.getTradePrice());
@@ -206,7 +206,7 @@ public class TransactionMapper {
                         tran.setId(tranId);
                         tran.setDate(dateTime);
                         tran.setSymbol(buyCcy.name());
-                        tran.setCcy(sellCcy);
+                        tran.setCurrency(sellCcy);
                         tran.setType(TransactionType.FX_BUY);
                         tran.setQty(rawTrade.getProceeds());
                         tran.setPrice(rawTrade.getTradePrice());
@@ -230,7 +230,7 @@ public class TransactionMapper {
                         tran.setId(tranId);
                         tran.setDate(dateTime);
                         tran.setSymbol(buyCcy.name());
-                        tran.setCcy(ccy);
+                        tran.setCurrency(ccy);
                         tran.setType(TransactionType.FX_BUY);
                         tran.setQty(rawTrade.getQuantity());
                         tran.setPrice(rawTrade.getTradePrice());

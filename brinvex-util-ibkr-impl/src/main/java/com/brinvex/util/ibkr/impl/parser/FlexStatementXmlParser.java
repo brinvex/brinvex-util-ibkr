@@ -5,6 +5,7 @@ import com.brinvex.util.ibkr.api.model.raw.AssetCategory;
 import com.brinvex.util.ibkr.api.model.raw.BuySell;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransactionType;
+import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.model.raw.SecurityIDType;
 import com.brinvex.util.ibkr.api.model.raw.Trade;
@@ -26,7 +27,7 @@ import java.time.temporal.Temporal;
 
 import static java.util.Objects.requireNonNull;
 
-public class ActivityFlexStatementXmlParser {
+public class FlexStatementXmlParser {
 
     private static class LazyHolder {
         private static final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
@@ -38,93 +39,98 @@ public class ActivityFlexStatementXmlParser {
     }
 
     private static class FlexStatementQN {
-        private static final QName accountId = new QName("accountId");
-        private static final QName fromDate = new QName("fromDate");
-        private static final QName toDate = new QName("toDate");
-        private static final QName whenGenerated = new QName("whenGenerated");
+        static final QName accountId = new QName("accountId");
+        static final QName fromDate = new QName("fromDate");
+        static final QName toDate = new QName("toDate");
+        static final QName whenGenerated = new QName("whenGenerated");
     }
 
     private static class CashTransactionQN {
-        private static final QName accountId = new QName("accountId");
-        private static final QName currency = new QName("currency");
-        private static final QName description = new QName("description");
-        private static final QName symbol = new QName("symbol");
-        private static final QName listingExchange = new QName("listingExchange");
-        private static final QName isin = new QName("isin");
-        private static final QName dateTime = new QName("dateTime");
-        private static final QName settleDate = new QName("settleDate");
-        private static final QName amount = new QName("amount");
-        private static final QName type = new QName("type");
-        private static final QName transactionID = new QName("transactionID");
-        private static final QName reportDate = new QName("reportDate");
-        private static final QName actionID = new QName("actionID");
+        static final QName currency = new QName("currency");
+        static final QName description = new QName("description");
+        static final QName symbol = new QName("symbol");
+        static final QName listingExchange = new QName("listingExchange");
+        static final QName isin = new QName("isin");
+        static final QName dateTime = new QName("dateTime");
+        static final QName settleDate = new QName("settleDate");
+        static final QName amount = new QName("amount");
+        static final QName type = new QName("type");
+        static final QName transactionID = new QName("transactionID");
+        static final QName reportDate = new QName("reportDate");
+        static final QName actionID = new QName("actionID");
     }
 
     private static class TradeQN {
-        private static final QName accountId = new QName("accountId");
-        private static final QName currency = new QName("currency");
-        private static final QName assetCategory = new QName("assetCategory");
-        private static final QName symbol = new QName("symbol");
-        private static final QName description = new QName("description");
-        private static final QName securityID = new QName("securityID");
-        private static final QName securityIDType = new QName("securityIDType");
-        private static final QName isin = new QName("isin");
-        private static final QName listingExchange = new QName("listingExchange");
-        private static final QName tradeID = new QName("tradeID");
-        private static final QName reportDate = new QName("reportDate");
-        private static final QName dateTime = new QName("dateTime");
-        private static final QName tradeDate = new QName("tradeDate");
-        private static final QName settleDateTarget = new QName("settleDateTarget");
-        private static final QName transactionType = new QName("transactionType");
-        private static final QName exchange = new QName("exchange");
-        private static final QName quantity = new QName("quantity");
-        private static final QName tradePrice = new QName("tradePrice");
-        private static final QName tradeMoney = new QName("tradeMoney");
-        private static final QName proceeds = new QName("proceeds");
-        private static final QName taxes = new QName("taxes");
-        private static final QName ibCommission = new QName("ibCommission");
-        private static final QName ibCommissionCurrency = new QName("ibCommissionCurrency");
-        private static final QName netCash = new QName("netCash");
-        private static final QName cost = new QName("cost");
-        private static final QName buySell = new QName("buySell");
-        private static final QName transactionID = new QName("transactionID");
-        private static final QName ibOrderID = new QName("ibOrderID");
-        private static final QName orderTime = new QName("orderTime");
+        static final QName currency = new QName("currency");
+        static final QName assetCategory = new QName("assetCategory");
+        static final QName symbol = new QName("symbol");
+        static final QName description = new QName("description");
+        static final QName securityID = new QName("securityID");
+        static final QName securityIDType = new QName("securityIDType");
+        static final QName isin = new QName("isin");
+        static final QName listingExchange = new QName("listingExchange");
+        static final QName tradeID = new QName("tradeID");
+        static final QName reportDate = new QName("reportDate");
+        static final QName dateTime = new QName("dateTime");
+        static final QName tradeDate = new QName("tradeDate");
+        static final QName settleDateTarget = new QName("settleDateTarget");
+        static final QName transactionType = new QName("transactionType");
+        static final QName exchange = new QName("exchange");
+        static final QName quantity = new QName("quantity");
+        static final QName tradePrice = new QName("tradePrice");
+        static final QName tradeMoney = new QName("tradeMoney");
+        static final QName proceeds = new QName("proceeds");
+        static final QName taxes = new QName("taxes");
+        static final QName ibCommission = new QName("ibCommission");
+        static final QName ibCommissionCurrency = new QName("ibCommissionCurrency");
+        static final QName netCash = new QName("netCash");
+        static final QName cost = new QName("cost");
+        static final QName buySell = new QName("buySell");
+        static final QName transactionID = new QName("transactionID");
+        static final QName ibOrderID = new QName("ibOrderID");
+        static final QName orderTime = new QName("orderTime");
     }
 
     private static class TradeConfirmQN {
-        private static final QName accountId = new QName("accountId");
-        private static final QName currency = new QName("currency");
-        private static final QName assetCategory = new QName("assetCategory");
-        private static final QName symbol = new QName("symbol");
-        private static final QName description = new QName("description");
-        private static final QName securityID = new QName("securityID");
-        private static final QName securityIDType = new QName("securityIDType");
-        private static final QName isin = new QName("isin");
-        private static final QName listingExchange = new QName("listingExchange");
-        private static final QName tradeID = new QName("tradeID");
-        private static final QName reportDate = new QName("reportDate");
-        private static final QName dateTime = new QName("dateTime");
-        private static final QName tradeDate = new QName("tradeDate");
-        private static final QName settleDate = new QName("settleDate");
-        private static final QName transactionType = new QName("transactionType");
-        private static final QName exchange = new QName("exchange");
-        private static final QName quantity = new QName("quantity");
-        private static final QName price = new QName("price");
-        private static final QName amount = new QName("amount");
-        private static final QName proceeds = new QName("proceeds");
-        private static final QName netCash = new QName("netCash");
-        private static final QName tax = new QName("tax");
-        private static final QName commission = new QName("commission");
-        private static final QName commissionCurrency = new QName("commissionCurrency");
-        private static final QName buySell = new QName("buySell");
-        private static final QName orderID = new QName("orderID");
-        private static final QName orderTime = new QName("orderTime");
+        static final QName currency = new QName("currency");
+        static final QName assetCategory = new QName("assetCategory");
+        static final QName symbol = new QName("symbol");
+        static final QName description = new QName("description");
+        static final QName securityID = new QName("securityID");
+        static final QName securityIDType = new QName("securityIDType");
+        static final QName isin = new QName("isin");
+        static final QName listingExchange = new QName("listingExchange");
+        static final QName tradeID = new QName("tradeID");
+        static final QName reportDate = new QName("reportDate");
+        static final QName dateTime = new QName("dateTime");
+        static final QName tradeDate = new QName("tradeDate");
+        static final QName settleDate = new QName("settleDate");
+        static final QName transactionType = new QName("transactionType");
+        static final QName exchange = new QName("exchange");
+        static final QName quantity = new QName("quantity");
+        static final QName price = new QName("price");
+        static final QName amount = new QName("amount");
+        static final QName proceeds = new QName("proceeds");
+        static final QName netCash = new QName("netCash");
+        static final QName tax = new QName("tax");
+        static final QName commission = new QName("commission");
+        static final QName commissionCurrency = new QName("commissionCurrency");
+        static final QName buySell = new QName("buySell");
+        static final QName orderID = new QName("orderID");
+        static final QName orderTime = new QName("orderTime");
     }
 
-    public FlexStatement parseStatement(String statementXmlContent) {
+    private static class EquitySummaryQN {
+        static final QName currency = new QName("currency");
+        static final QName reportDate = new QName("reportDate");
+        static final QName cash = new QName("cash");
+        static final QName stock = new QName("stock");
+        static final QName dividendAccruals = new QName("dividendAccruals");
+        static final QName total = new QName("total");
+    }
+
+    public FlexStatement parseActivities(String statementXmlContent) {
         FlexStatement flexStatement = null;
-        String accountId = null;
         try {
             XMLEventReader reader = LazyHolder.xmlInputFactory.createXMLEventReader(new StringReader(statementXmlContent));
             while (reader.hasNext()) {
@@ -138,18 +144,13 @@ public class ActivityFlexStatementXmlParser {
                             if (flexStatement != null) {
                                 throw new IllegalArgumentException("Unexpected xml node FlexStatement");
                             }
-                            accountId = e.getAttributeByName(FlexStatementQN.accountId).getValue();
                             flexStatement = new FlexStatement();
-                            flexStatement.setAccountId(accountId);
+                            flexStatement.setAccountId(e.getAttributeByName(FlexStatementQN.accountId).getValue());
                             flexStatement.setFromDate(parseDate(e.getAttributeByName(FlexStatementQN.fromDate).getValue()));
                             flexStatement.setToDate(parseDate(e.getAttributeByName(FlexStatementQN.toDate).getValue()));
                             flexStatement.setWhenGenerated(parseZonedDateTime(e.getAttributeByName(FlexStatementQN.whenGenerated).getValue()));
                         }
                         case "Trade" -> {
-                            String tradeAccountId = e.getAttributeByName(TradeQN.accountId).getValue();
-                            if (accountId == null || !accountId.equals(tradeAccountId)) {
-                                throw new IllegalArgumentException("accountId mismatch: %s != %s".formatted(accountId, tradeAccountId));
-                            }
                             Trade trade = new Trade();
                             trade.setCurrency(Currency.valueOf(e.getAttributeByName(TradeQN.currency).getValue()));
                             trade.setAssetCategory(AssetCategory.valueOf(e.getAttributeByName(TradeQN.assetCategory).getValue()));
@@ -184,10 +185,6 @@ public class ActivityFlexStatementXmlParser {
                             flexStatement.getTrades().add(trade);
                         }
                         case "TradeConfirm" -> {
-                            String tradeConfAccountId = e.getAttributeByName(TradeConfirmQN.accountId).getValue();
-                            if (accountId == null || !accountId.equals(tradeConfAccountId)) {
-                                throw new IllegalArgumentException("accountId mismatch: %s != %s".formatted(accountId, tradeConfAccountId));
-                            }
                             TradeConfirm tradeConfirm = new TradeConfirm();
                             tradeConfirm.setCurrency(Currency.valueOf(e.getAttributeByName(TradeConfirmQN.currency).getValue()));
                             tradeConfirm.setAssetCategory(AssetCategory.valueOf(e.getAttributeByName(TradeConfirmQN.assetCategory).getValue()));
@@ -221,10 +218,6 @@ public class ActivityFlexStatementXmlParser {
                         }
                         case "CashTransaction" -> {
                             CashTransaction cashTran = new CashTransaction();
-                            String cashTranAccountId = e.getAttributeByName(CashTransactionQN.accountId).getValue();
-                            if (accountId == null || !accountId.equals(cashTranAccountId)) {
-                                throw new IllegalArgumentException("accountId mismatch: %s != %s".formatted(accountId, cashTranAccountId));
-                            }
                             cashTran.setCurrency(Currency.valueOf(e.getAttributeByName(CashTransactionQN.currency).getValue()));
                             cashTran.setSymbol(e.getAttributeByName(CashTransactionQN.symbol).getValue());
                             cashTran.setListingExchange(e.getAttributeByName(CashTransactionQN.listingExchange).getValue());
@@ -240,6 +233,53 @@ public class ActivityFlexStatementXmlParser {
 
                             requireNonNull(flexStatement);
                             flexStatement.getCashTransactions().add(cashTran);
+                        }
+                    }
+                }
+            }
+
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (flexStatement == null) {
+            throw new IllegalArgumentException("Could not parse: " + statementXmlContent);
+        }
+        return flexStatement;
+    }
+
+    public FlexStatement parseEquitySummaries(String statementXmlContent) {
+        FlexStatement flexStatement = null;
+        try {
+            XMLEventReader reader = LazyHolder.xmlInputFactory.createXMLEventReader(new StringReader(statementXmlContent));
+            while (reader.hasNext()) {
+                XMLEvent xmlEvent = reader.nextEvent();
+                if (xmlEvent.isStartElement()) {
+                    StartElement e = xmlEvent.asStartElement();
+                    String elementName = e.getName().getLocalPart();
+
+                    switch (elementName) {
+                        case "FlexStatement" -> {
+                            if (flexStatement != null) {
+                                throw new IllegalArgumentException("Unexpected xml node FlexStatement");
+                            }
+                            flexStatement = new FlexStatement();
+                            flexStatement.setAccountId(e.getAttributeByName(FlexStatementQN.accountId).getValue());
+                            flexStatement.setFromDate(parseDate(e.getAttributeByName(FlexStatementQN.fromDate).getValue()));
+                            flexStatement.setToDate(parseDate(e.getAttributeByName(FlexStatementQN.toDate).getValue()));
+                            flexStatement.setWhenGenerated(parseZonedDateTime(e.getAttributeByName(FlexStatementQN.whenGenerated).getValue()));
+                        }
+                        case "EquitySummaryByReportDateInBase" -> {
+                            EquitySummary equitySummary = new EquitySummary();
+                            equitySummary.setCurrency(Currency.valueOf(e.getAttributeByName(EquitySummaryQN.currency).getValue()));
+                            equitySummary.setReportDate(parseDate(e.getAttributeByName(EquitySummaryQN.reportDate).getValue()));
+                            equitySummary.setCash(new BigDecimal(e.getAttributeByName(EquitySummaryQN.cash).getValue()));
+                            equitySummary.setStock(new BigDecimal(e.getAttributeByName(EquitySummaryQN.stock).getValue()));
+                            equitySummary.setDividendAccruals(new BigDecimal(e.getAttributeByName(EquitySummaryQN.dividendAccruals).getValue()));
+                            equitySummary.setTotal(new BigDecimal(e.getAttributeByName(EquitySummaryQN.total).getValue()));
+
+                            requireNonNull(flexStatement);
+                            flexStatement.getEquitySummaries().add(equitySummary);
                         }
                     }
                 }

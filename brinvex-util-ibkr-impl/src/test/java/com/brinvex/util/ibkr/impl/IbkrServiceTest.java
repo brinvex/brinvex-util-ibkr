@@ -2,6 +2,7 @@ package com.brinvex.util.ibkr.impl;
 
 import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.Portfolio;
+import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.service.IbkrService;
 import com.brinvex.util.ibkr.api.service.IbkrServiceFactory;
@@ -13,11 +14,13 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IbkrServiceTest {
 
@@ -39,7 +42,7 @@ class IbkrServiceTest {
         List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
-            FlexStatement flexStatement = ibkrService.parseStatements(Stream.of(content));
+            FlexStatement flexStatement = ibkrService.parseActivitiesFromStatements(Stream.of(content));
             assertNotNull(flexStatement);
         }
     }
@@ -51,7 +54,7 @@ class IbkrServiceTest {
         List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("U029_Activity_20230101_20230726.xml"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
-            Portfolio ptf = ibkrService.processStatements(Stream.of(content));
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
             assertNotNull(ptf);
 
             assertEquals(2, ptf.getCash().size());
@@ -70,7 +73,7 @@ class IbkrServiceTest {
         Portfolio ptf = null;
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
-            ptf = ibkrService.processStatements(ptf, Stream.of(content));
+            ptf = ibkrService.fillPortfolioFromStatements(ptf, Stream.of(content));
         }
         assertNotNull(ptf);
 
@@ -91,7 +94,7 @@ class IbkrServiceTest {
         Portfolio ptf = null;
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
-            ptf = ibkrService.processStatements(ptf, Stream.of(content));
+            ptf = ibkrService.fillPortfolioFromStatements(ptf, Stream.of(content));
         }
         assertNotNull(ptf);
 
@@ -113,8 +116,35 @@ class IbkrServiceTest {
             IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
             String activityStatement = ibkrService.fetchStatement(token, activityFlexQueryId);
             String tradeConfirmStatement = ibkrService.fetchStatement(token, tradeConfirmFlexQueryId);
-            Portfolio ptf = ibkrService.processStatements(Stream.of(activityStatement, tradeConfirmStatement));
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(activityStatement, tradeConfirmStatement));
             assertNotNull(ptf);
         }
+    }
+
+    @Test
+    void parseEquitySummaries() throws IOException {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = List.of(
+                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20220802_20230801.xml"))
+        );
+        FlexStatement flexStatement = ibkrService.parseEquitySummariesFromStatements(activityReportPaths);
+        assertNotNull(flexStatement);
+
+
+        List<EquitySummary> equitySummaries = flexStatement.getEquitySummaries();
+        assertEquals(0, equitySummaries.get(0).getTotal().compareTo(BigDecimal.ZERO));
+
+        EquitySummary newestEquitySummary = equitySummaries.get(equitySummaries.size() - 1);
+        assertTrue(newestEquitySummary.getReportDate().isEqual(LocalDate.parse("2023-08-01")));
+
+        BigDecimal total = new BigDecimal("14937.395623791");
+        BigDecimal cash = new BigDecimal("260.616751991");
+        BigDecimal stock = new BigDecimal("14672.7549922");
+        BigDecimal dividendAccruals = new BigDecimal("4.0238796");
+        assertEquals(0, newestEquitySummary.getCash().compareTo(cash));
+        assertEquals(0, newestEquitySummary.getTotal().compareTo(total));
+        assertEquals(0, newestEquitySummary.getStock().compareTo(stock));
+        assertEquals(0, newestEquitySummary.getDividendAccruals().compareTo(dividendAccruals));
+        assertEquals(0, cash.add(stock).add(dividendAccruals).compareTo(total));
     }
 }

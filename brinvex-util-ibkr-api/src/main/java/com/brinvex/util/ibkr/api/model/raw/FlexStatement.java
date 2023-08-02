@@ -23,6 +23,8 @@ public class FlexStatement implements Serializable {
 
     private final List<TradeConfirm> tradeConfirms = new ArrayList<>();
 
+    private final List<EquitySummary> equitySummaries = new ArrayList<>();
+
     public String getAccountId() {
         return accountId;
     }
@@ -67,6 +69,9 @@ public class FlexStatement implements Serializable {
         return tradeConfirms;
     }
 
+    public List<EquitySummary> getEquitySummaries() {
+        return equitySummaries;
+    }
 
     @Override
     public String toString() {
@@ -78,6 +83,7 @@ public class FlexStatement implements Serializable {
                 .add("cashTransactions=" + cashTransactions)
                 .add("trades=" + trades)
                 .add("tradeConfirms=" + tradeConfirms)
+                .add("equitySummaries=" + equitySummaries)
                 .toString();
     }
 }

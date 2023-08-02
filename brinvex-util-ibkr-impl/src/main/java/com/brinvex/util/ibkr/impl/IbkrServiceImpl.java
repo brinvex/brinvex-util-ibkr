@@ -3,12 +3,13 @@ package com.brinvex.util.ibkr.impl;
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
+import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.model.raw.Trade;
 import com.brinvex.util.ibkr.api.model.raw.TradeConfirm;
 import com.brinvex.util.ibkr.api.service.IbkrService;
 import com.brinvex.util.ibkr.api.service.exception.IbkrServiceException;
-import com.brinvex.util.ibkr.impl.parser.ActivityFlexStatementXmlParser;
+import com.brinvex.util.ibkr.impl.parser.FlexStatementXmlParser;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -36,7 +37,7 @@ import static java.util.stream.Collectors.toCollection;
 @SuppressWarnings({"GrazieInspection"})
 public class IbkrServiceImpl implements IbkrService {
 
-    private final ActivityFlexStatementXmlParser activityFlexStatementXmlParser;
+    private final FlexStatementXmlParser flexStatementXmlParser;
 
     private final PortfolioManager ptfManager;
 
@@ -49,22 +50,22 @@ public class IbkrServiceImpl implements IbkrService {
     }
 
     public IbkrServiceImpl() {
-        this(new ActivityFlexStatementXmlParser(), new PortfolioManager(), new TransactionMapper());
+        this(new FlexStatementXmlParser(), new PortfolioManager(), new TransactionMapper());
     }
 
     public IbkrServiceImpl(
-            ActivityFlexStatementXmlParser activityFlexStatementXmlParser,
+            FlexStatementXmlParser flexStatementXmlParser,
             PortfolioManager ptfManager,
             TransactionMapper transactionMapper
     ) {
-        this.activityFlexStatementXmlParser = activityFlexStatementXmlParser;
+        this.flexStatementXmlParser = flexStatementXmlParser;
         this.ptfManager = ptfManager;
         this.transactionMapper = transactionMapper;
     }
 
     @Override
-    public FlexStatement parseStatements(Collection<Path> statementFilePaths) {
-        return parseStatements(statementFilePaths
+    public FlexStatement parseActivitiesFromStatements(Collection<Path> statementFilePaths) {
+        return parseActivitiesFromStatements(statementFilePaths
                 .stream()
                 .map(filePath -> {
                     try {
@@ -78,9 +79,9 @@ public class IbkrServiceImpl implements IbkrService {
 
     @SuppressWarnings("DuplicatedCode")
     @Override
-    public FlexStatement parseStatements(Stream<String> statementContents) {
+    public FlexStatement parseActivitiesFromStatements(Stream<String> statementContents) {
         List<FlexStatement> rawFlexStatements = statementContents
-                .map(activityFlexStatementXmlParser::parseStatement)
+                .map(flexStatementXmlParser::parseActivities)
                 .sorted(comparing(FlexStatement::getFromDate).thenComparing(FlexStatement::getToDate))
                 .toList();
 
@@ -143,7 +144,76 @@ public class IbkrServiceImpl implements IbkrService {
     }
 
     @Override
-    public Portfolio processStatements(Collection<Path> statementPaths) {
+    public FlexStatement parseEquitySummariesFromStatements(Collection<Path> statementFilePaths) {
+        return parseEquitySummariesFromStatements(statementFilePaths
+                .stream()
+                .map(filePath -> {
+                    try {
+                        return Files.readString(filePath);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
+        );
+    }
+
+    @Override
+    public FlexStatement parseEquitySummariesFromStatements(Stream<String> statementContents) {
+        List<FlexStatement> rawFlexStatements = statementContents
+                .map(flexStatementXmlParser::parseEquitySummaries)
+                .sorted(comparing(FlexStatement::getFromDate).thenComparing(FlexStatement::getToDate))
+                .toList();
+
+        if (rawFlexStatements.isEmpty()) {
+            throw new IllegalArgumentException("Expected non-empty stream of statements");
+        }
+
+        FlexStatement result = new FlexStatement();
+        String accountId0;
+        {
+            FlexStatement rawTranList0 = rawFlexStatements.get(0);
+            accountId0 = rawTranList0.getAccountId();
+
+            result.setAccountId(accountId0);
+            result.setFromDate(rawTranList0.getFromDate());
+            result.setToDate(rawTranList0.getToDate());
+        }
+
+        TreeMap<LocalDate, EquitySummary> equitySummaries = new TreeMap<>();
+
+        for (FlexStatement rawTranList : rawFlexStatements) {
+            LocalDate fromDate = rawTranList.getFromDate();
+            LocalDate toDate = rawTranList.getToDate();
+
+            String accountId = rawTranList.getAccountId();
+            if (!accountId0.equals(accountId)) {
+                throw new IbkrServiceException(format("Unexpected multiple accounts: %s, %s",
+                        accountId0,
+                        accountId
+                ));
+            }
+
+            LocalDate nextPeriodFrom = result.getToDate().plusDays(1);
+            if (nextPeriodFrom.isBefore(fromDate)) {
+                throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
+                        nextPeriodFrom, fromDate.minusDays(1), accountId0));
+            }
+            if (toDate.isAfter(result.getToDate())) {
+                result.setToDate(toDate);
+            }
+
+            for (EquitySummary es : rawTranList.getEquitySummaries()) {
+                equitySummaries.putIfAbsent(es.getReportDate(), es);
+            }
+        }
+
+        result.getEquitySummaries().addAll(equitySummaries.values());
+
+        return result;
+    }
+
+    @Override
+    public Portfolio fillPortfolioFromStatements(Collection<Path> statementPaths) {
         Stream<String> statementContentStream = statementPaths
                 .stream()
                 .map(filePath -> {
@@ -153,18 +223,18 @@ public class IbkrServiceImpl implements IbkrService {
                         throw new RuntimeException(e);
                     }
                 });
-        return processStatements(statementContentStream);
+        return fillPortfolioFromStatements(statementContentStream);
     }
 
     @Override
-    public Portfolio processStatements(Stream<String> statementContents) {
-        return processStatements(null, statementContents);
+    public Portfolio fillPortfolioFromStatements(Stream<String> statementContents) {
+        return fillPortfolioFromStatements(null, statementContents);
     }
 
     @Override
     @SuppressWarnings("DuplicatedCode")
-    public Portfolio processStatements(Portfolio ptf, Stream<String> statementContents) {
-        FlexStatement flexStatement = parseStatements(statementContents);
+    public Portfolio fillPortfolioFromStatements(Portfolio ptf, Stream<String> statementContents) {
+        FlexStatement flexStatement = parseActivitiesFromStatements(statementContents);
         List<CashTransaction> rawCashTrans = flexStatement.getCashTransactions();
         List<Trade> rawTrades = flexStatement.getTrades();
         List<TradeConfirm> rawTradeConfirms = flexStatement.getTradeConfirms();

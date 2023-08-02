@@ -3,7 +3,6 @@ package com.brinvex.util.ibkr.api.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.StringJoiner;
 
@@ -23,7 +22,7 @@ public class Transaction implements Serializable {
 
     private BigDecimal qty;
 
-    private Currency ccy;
+    private Currency currency;
 
     private BigDecimal price;
 
@@ -87,12 +86,12 @@ public class Transaction implements Serializable {
         this.qty = qty;
     }
 
-    public Currency getCcy() {
-        return ccy;
+    public Currency getCurrency() {
+        return currency;
     }
 
-    public void setCcy(Currency ccy) {
-        this.ccy = ccy;
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
     }
 
     public BigDecimal getPrice() {
@@ -170,7 +169,7 @@ public class Transaction implements Serializable {
                 .add("symbol='" + symbol + "'")
                 .add("isin='" + isin + "'")
                 .add("qty=" + qty)
-                .add("ccy=" + ccy)
+                .add("ccy=" + currency)
                 .add("price=" + price)
                 .add("grossValue=" + grossValue)
                 .add("netValue=" + netValue)

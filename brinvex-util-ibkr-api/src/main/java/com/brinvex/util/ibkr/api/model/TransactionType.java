@@ -168,7 +168,7 @@ public enum TransactionType {
             }
         }
         if (t.getNetValue() != null) {
-            if (t.getCcy() == null) {
+            if (t.getCurrency() == null) {
                 return false;
             }
         }

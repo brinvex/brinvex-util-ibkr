@@ -9,15 +9,19 @@ import java.util.stream.Stream;
 
 public interface IbkrService {
 
-    FlexStatement parseStatements(Collection<Path> statementFilePaths);
+    FlexStatement parseActivitiesFromStatements(Collection<Path> statementFilePaths);
 
-    FlexStatement parseStatements(Stream<String> statementContents);
+    FlexStatement parseActivitiesFromStatements(Stream<String> statementContents);
 
-    Portfolio processStatements(Collection<Path> statementPaths);
+    FlexStatement parseEquitySummariesFromStatements(Collection<Path> statementFilePaths);
 
-    Portfolio processStatements(Stream<String> statementContents);
+    FlexStatement parseEquitySummariesFromStatements(Stream<String> statementContents);
 
-    Portfolio processStatements(Portfolio ptf, Stream<String> statementContents);
+    Portfolio fillPortfolioFromStatements(Collection<Path> statementPaths);
+
+    Portfolio fillPortfolioFromStatements(Stream<String> statementContents);
+
+    Portfolio fillPortfolioFromStatements(Portfolio ptf, Stream<String> statementContents);
 
     /**
      * See https://www.interactivebrokers.co.in/en/?f=asr_statements_tradeconfirmations&p=flexqueries4
