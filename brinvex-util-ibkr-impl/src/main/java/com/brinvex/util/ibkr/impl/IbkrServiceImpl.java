@@ -255,6 +255,7 @@ public class IbkrServiceImpl implements IbkrService {
         String accountId = flexStatement.getAccountId();
         LocalDate periodFrom = flexStatement.getFromDate();
         LocalDate periodTo = flexStatement.getToDate();
+        LocalDate today = LocalDate.now();
         if (ptf == null) {
             ptf = ptfManager.initPortfolio(accountId, periodFrom, periodTo);
         } else {
@@ -266,7 +267,10 @@ public class IbkrServiceImpl implements IbkrService {
             }
             LocalDate nextPeriodFrom = ptf.getPeriodTo().plusDays(1);
             if (nextPeriodFrom.isBefore(periodFrom)) {
-                if (!FlexStatementType.TCF.equals(flexStatement.getType())) {
+                boolean isTodayPeriod = periodFrom.isEqual(today) && periodTo.isEqual(today);
+                FlexStatementType statementType = flexStatement.getType();
+                boolean tolerateMissingPeriod = (statementType == null && isTodayPeriod) || FlexStatementType.TCF.equals(statementType);
+                if (!tolerateMissingPeriod) {
                     throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
                             nextPeriodFrom, periodFrom.minusDays(1), accountId));
                 }
