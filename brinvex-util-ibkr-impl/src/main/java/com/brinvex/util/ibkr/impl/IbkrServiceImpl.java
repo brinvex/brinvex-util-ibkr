@@ -5,6 +5,7 @@ import com.brinvex.util.ibkr.api.model.Transaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
+import com.brinvex.util.ibkr.api.model.raw.FlexStatementType;
 import com.brinvex.util.ibkr.api.model.raw.Trade;
 import com.brinvex.util.ibkr.api.model.raw.TradeConfirm;
 import com.brinvex.util.ibkr.api.service.IbkrService;
@@ -43,6 +44,8 @@ public class IbkrServiceImpl implements IbkrService {
 
     private final TransactionMapper transactionMapper;
 
+    private final String flexQueryUrl;
+
     private static class LazyHolder {
         private static final Pattern HTTP_RESP1_STATUS_PATTERN = Pattern.compile("<Status>(.*)</Status>");
         private static final Pattern HTTP_RESP1_REFERENCE_CODE_PATTERN = Pattern.compile("<ReferenceCode>(.*)</ReferenceCode>");
@@ -50,17 +53,23 @@ public class IbkrServiceImpl implements IbkrService {
     }
 
     public IbkrServiceImpl() {
-        this(new FlexStatementXmlParser(), new PortfolioManager(), new TransactionMapper());
+        this(new FlexStatementXmlParser(), new PortfolioManager(), new TransactionMapper(), "https://www.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest?t=%s&q=%s&v=3");
+    }
+
+    public IbkrServiceImpl(String flexQueryUrl) {
+        this(new FlexStatementXmlParser(), new PortfolioManager(), new TransactionMapper(), flexQueryUrl);
     }
 
     public IbkrServiceImpl(
             FlexStatementXmlParser flexStatementXmlParser,
             PortfolioManager ptfManager,
-            TransactionMapper transactionMapper
+            TransactionMapper transactionMapper,
+            String flexQueryUrl
     ) {
         this.flexStatementXmlParser = flexStatementXmlParser;
         this.ptfManager = ptfManager;
         this.transactionMapper = transactionMapper;
+        this.flexQueryUrl = flexQueryUrl;
     }
 
     @Override
@@ -104,11 +113,11 @@ public class IbkrServiceImpl implements IbkrService {
         TreeMap<String, Trade> rawTrades = new TreeMap<>();
         TreeMap<String, TradeConfirm> rawTradeConfirms = new TreeMap<>();
 
-        for (FlexStatement rawTranList : rawFlexStatements) {
-            LocalDate fromDate = rawTranList.getFromDate();
-            LocalDate toDate = rawTranList.getToDate();
+        for (FlexStatement flexStatement : rawFlexStatements) {
+            LocalDate fromDate = flexStatement.getFromDate();
+            LocalDate toDate = flexStatement.getToDate();
 
-            String accountId = rawTranList.getAccountId();
+            String accountId = flexStatement.getAccountId();
             if (!accountId0.equals(accountId)) {
                 throw new IbkrServiceException(format("Unexpected multiple accounts: %s, %s",
                         accountId0,
@@ -118,20 +127,22 @@ public class IbkrServiceImpl implements IbkrService {
 
             LocalDate nextPeriodFrom = result.getToDate().plusDays(1);
             if (nextPeriodFrom.isBefore(fromDate)) {
-                throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
-                        nextPeriodFrom, fromDate.minusDays(1), accountId0));
+                if (!FlexStatementType.TCF.equals(flexStatement.getType())) {
+                    throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
+                            nextPeriodFrom, fromDate.minusDays(1), accountId0));
+                }
             }
             if (toDate.isAfter(result.getToDate())) {
                 result.setToDate(toDate);
             }
 
-            for (CashTransaction rawCashTran : rawTranList.getCashTransactions()) {
+            for (CashTransaction rawCashTran : flexStatement.getCashTransactions()) {
                 rawCashTrans.putIfAbsent(TranIdGenerator.getId(rawCashTran), rawCashTran);
             }
-            for (Trade rawTrade : rawTranList.getTrades()) {
+            for (Trade rawTrade : flexStatement.getTrades()) {
                 rawTrades.putIfAbsent(TranIdGenerator.getId(rawTrade), rawTrade);
             }
-            for (TradeConfirm rawTradeConfirm : rawTranList.getTradeConfirms()) {
+            for (TradeConfirm rawTradeConfirm : flexStatement.getTradeConfirms()) {
                 rawTradeConfirms.putIfAbsent(TranIdGenerator.getId(rawTradeConfirm), rawTradeConfirm);
             }
         }
@@ -171,21 +182,21 @@ public class IbkrServiceImpl implements IbkrService {
         FlexStatement result = new FlexStatement();
         String accountId0;
         {
-            FlexStatement rawTranList0 = rawFlexStatements.get(0);
-            accountId0 = rawTranList0.getAccountId();
+            FlexStatement flexStatement = rawFlexStatements.get(0);
+            accountId0 = flexStatement.getAccountId();
 
             result.setAccountId(accountId0);
-            result.setFromDate(rawTranList0.getFromDate());
-            result.setToDate(rawTranList0.getToDate());
+            result.setFromDate(flexStatement.getFromDate());
+            result.setToDate(flexStatement.getToDate());
         }
 
         TreeMap<LocalDate, EquitySummary> equitySummaries = new TreeMap<>();
 
-        for (FlexStatement rawTranList : rawFlexStatements) {
-            LocalDate fromDate = rawTranList.getFromDate();
-            LocalDate toDate = rawTranList.getToDate();
+        for (FlexStatement flexStatement : rawFlexStatements) {
+            LocalDate fromDate = flexStatement.getFromDate();
+            LocalDate toDate = flexStatement.getToDate();
 
-            String accountId = rawTranList.getAccountId();
+            String accountId = flexStatement.getAccountId();
             if (!accountId0.equals(accountId)) {
                 throw new IbkrServiceException(format("Unexpected multiple accounts: %s, %s",
                         accountId0,
@@ -195,14 +206,16 @@ public class IbkrServiceImpl implements IbkrService {
 
             LocalDate nextPeriodFrom = result.getToDate().plusDays(1);
             if (nextPeriodFrom.isBefore(fromDate)) {
-                throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
-                        nextPeriodFrom, fromDate.minusDays(1), accountId0));
+                if (!FlexStatementType.TCF.equals(flexStatement.getType())) {
+                    throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
+                            nextPeriodFrom, fromDate.minusDays(1), accountId0));
+                }
             }
             if (toDate.isAfter(result.getToDate())) {
                 result.setToDate(toDate);
             }
 
-            for (EquitySummary es : rawTranList.getEquitySummaries()) {
+            for (EquitySummary es : flexStatement.getEquitySummaries()) {
                 equitySummaries.putIfAbsent(es.getReportDate(), es);
             }
         }
@@ -253,8 +266,10 @@ public class IbkrServiceImpl implements IbkrService {
             }
             LocalDate nextPeriodFrom = ptf.getPeriodTo().plusDays(1);
             if (nextPeriodFrom.isBefore(periodFrom)) {
-                throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
-                        nextPeriodFrom, periodFrom.minusDays(1), accountId));
+                if (!FlexStatementType.TCF.equals(flexStatement.getType())) {
+                    throw new IbkrServiceException(format("Missing period: '%s - %s', accountId=%s",
+                            nextPeriodFrom, periodFrom.minusDays(1), accountId));
+                }
             }
             if (periodTo.isAfter(ptf.getPeriodTo())) {
                 ptf.setPeriodTo(periodTo);
@@ -289,69 +304,90 @@ public class IbkrServiceImpl implements IbkrService {
 
     @Override
     public String fetchStatement(String token, String flexQueryId) {
-        String referenceCode = null;
-        String baseUrl2 = null;
         HttpClient httpClient = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .build();
+        String tokenPrefix = token.substring(0, 4);
         try {
-            String url1 = "https://www.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest?t=%s&q=%s&v=3"
-                    .formatted(token, flexQueryId);
-            HttpRequest req1 = HttpRequest.newBuilder(URI.create(url1)).build();
-            HttpResponse<String> resp1 = httpClient.send(req1, HttpResponse.BodyHandlers.ofString());
-            String respBody1 = resp1.body();
+            String referenceCode = null;
+            String baseUrl2 = null;
+            for (int i = 0; i < 10; i++) {
+                var req1 = HttpRequest.newBuilder(URI.create(flexQueryUrl.formatted(token, flexQueryId))).build();
+                var resp1 = httpClient.send(req1, HttpResponse.BodyHandlers.ofString());
+                var respBody1 = resp1.body();
 
-            String status = null;
-            {
-                Matcher m1 = LazyHolder.HTTP_RESP1_STATUS_PATTERN.matcher(respBody1);
-                if (m1.find()) {
-                    status = m1.group(1);
+                if (httpRespContainsRepeatableError(respBody1)) {
+                    Thread.sleep(i * 2000);
+                    continue;
                 }
-                Matcher m2 = LazyHolder.HTTP_RESP1_REFERENCE_CODE_PATTERN.matcher(respBody1);
-                if (m2.find()) {
-                    referenceCode = m2.group(1);
+
+                String status = null;
+                {
+                    Matcher m1 = LazyHolder.HTTP_RESP1_STATUS_PATTERN.matcher(respBody1);
+                    if (m1.find()) {
+                        status = m1.group(1);
+                    }
+                    Matcher m2 = LazyHolder.HTTP_RESP1_REFERENCE_CODE_PATTERN.matcher(respBody1);
+                    if (m2.find()) {
+                        referenceCode = m2.group(1);
+                    }
+                    Matcher m3 = LazyHolder.HTTP_RESP1_URL_PATTERN.matcher(respBody1);
+                    if (m3.find()) {
+                        baseUrl2 = m3.group(1);
+                    }
                 }
-                Matcher m3 = LazyHolder.HTTP_RESP1_URL_PATTERN.matcher(respBody1);
-                if (m3.find()) {
-                    baseUrl2 = m3.group(1);
+                if (status == null || referenceCode == null || baseUrl2 == null || !status.equals("Success")) {
+                    throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s... -> status=%s, referenceCode=%s, baseUrl2=%s"
+                            .formatted(flexQueryId, tokenPrefix, status, referenceCode, baseUrl2));
+                } else {
+                    break;
                 }
             }
-            if (status == null || referenceCode == null || baseUrl2 == null || !status.equals("Success")) {
-                throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s... -> status=%s, referenceCode=%s, baseUrl2=%s"
-                        .formatted(flexQueryId, token.substring(0, 4), status, referenceCode, baseUrl2));
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        for (int i = 1; i <= 10; i++) {
-            try {
-                Thread.sleep(i * 1000);
-                String url2 = baseUrl2 + ("?q=%s&t=%s&v=3".formatted(referenceCode, token));
-                HttpRequest req2 = HttpRequest.newBuilder(URI.create(url2)).build();
-                HttpResponse<String> resp2 = httpClient.send(req2, HttpResponse.BodyHandlers.ofString());
-                String respBody2 = resp2.body();
 
-                /*
-                <FlexStatementResponse timestamp='26 July, 2023 05:45 AM EDT'>
-                    <Status>Warn</Status>
-                    <ErrorCode>1019</ErrorCode>
-                    <ErrorMessage>Statement generation in progress. Please try again shortly.</ErrorMessage>
-                </FlexStatementResponse>
-                 */
-                if (respBody2.contains("<ErrorCode>1019</ErrorCode>")) {
+            for (int i = 0; i < 10; i++) {
+                Thread.sleep(i * 1000 + 1000);
+                var url2 = baseUrl2 + ("?q=%s&t=%s&v=3".formatted(referenceCode, token));
+                var req2 = HttpRequest.newBuilder(URI.create(url2)).build();
+                var resp2 = httpClient.send(req2, HttpResponse.BodyHandlers.ofString());
+                var respBody2 = resp2.body();
+                if (httpRespContainsRepeatableError(respBody2)) {
                     continue;
                 }
                 return respBody2;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IbkrServiceException("Interrupted - flexQueryId=%s, token=%s".formatted(flexQueryId, tokenPrefix));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s..."
-                .formatted(flexQueryId, token.substring(0, 4)));
+        throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s".formatted(flexQueryId, tokenPrefix));
+    }
+
+    @SuppressWarnings("RedundantIfStatement")
+    private boolean httpRespContainsRepeatableError(String respBody2) {
+        /*
+        <FlexStatementResponse timestamp='26 July, 2023 05:45 AM EDT'>
+            <Status>Warn</Status>
+            <ErrorCode>1019</ErrorCode>
+            <ErrorMessage>Statement generation in progress. Please try again shortly.</ErrorMessage>
+        </FlexStatementResponse>
+         */
+        if (respBody2.contains("<ErrorCode>1019</ErrorCode>")) {
+            return true;
+        }
+
+        /*
+        <FlexStatementResponse timestamp='05 August, 2023 08:01 AM EDT'>
+            <Status>Fail</Status>
+            <ErrorCode>1018</ErrorCode>
+            <ErrorMessage>Too many requests have been made from this token. Please try again shortly.</ErrorMessage>
+        </FlexStatementResponse>
+         */
+        if (respBody2.contains("<ErrorCode>1018</ErrorCode>")) {
+            return true;
+        }
+        return false;
     }
 
 }

@@ -7,6 +7,7 @@ import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransactionType;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
+import com.brinvex.util.ibkr.api.model.raw.FlexStatementType;
 import com.brinvex.util.ibkr.api.model.raw.SecurityIDType;
 import com.brinvex.util.ibkr.api.model.raw.Trade;
 import com.brinvex.util.ibkr.api.model.raw.TradeConfirm;
@@ -27,6 +28,7 @@ import java.time.temporal.Temporal;
 
 import static java.util.Objects.requireNonNull;
 
+@SuppressWarnings("DuplicatedCode")
 public class FlexStatementXmlParser {
 
     private static class LazyHolder {
@@ -36,6 +38,10 @@ public class FlexStatementXmlParser {
         // 20230727;052240 EDT ---> 2023-07-27T05:22:40-04:00[America/New_York]
         private static final DateTimeFormatter ibkrDtf = DateTimeFormatter.ofPattern("yyyyMMdd;HHmmss z");
 
+    }
+
+    private static class FlexQueryResponseQN {
+        static final QName type = new QName("type");
     }
 
     private static class FlexStatementQN {
@@ -129,10 +135,12 @@ public class FlexStatementXmlParser {
         static final QName total = new QName("total");
     }
 
+    @SuppressWarnings("RedundantLabeledSwitchRuleCodeBlock")
     public FlexStatement parseActivities(String statementXmlContent) {
         FlexStatement flexStatement = null;
         try {
             XMLEventReader reader = LazyHolder.xmlInputFactory.createXMLEventReader(new StringReader(statementXmlContent));
+            FlexStatementType flexStatementType = null;
             while (reader.hasNext()) {
                 XMLEvent xmlEvent = reader.nextEvent();
                 if (xmlEvent.isStartElement()) {
@@ -140,6 +148,9 @@ public class FlexStatementXmlParser {
                     String elementName = e.getName().getLocalPart();
 
                     switch (elementName) {
+                        case "FlexQueryResponse" -> {
+                            flexStatementType = FlexStatementType.valueOf(e.getAttributeByName(FlexQueryResponseQN.type).getValue());
+                        }
                         case "FlexStatement" -> {
                             if (flexStatement != null) {
                                 throw new IllegalArgumentException("Unexpected xml node FlexStatement");
@@ -149,6 +160,7 @@ public class FlexStatementXmlParser {
                             flexStatement.setFromDate(parseDate(e.getAttributeByName(FlexStatementQN.fromDate).getValue()));
                             flexStatement.setToDate(parseDate(e.getAttributeByName(FlexStatementQN.toDate).getValue()));
                             flexStatement.setWhenGenerated(parseZonedDateTime(e.getAttributeByName(FlexStatementQN.whenGenerated).getValue()));
+                            flexStatement.setType(requireNonNull(flexStatementType));
                         }
                         case "Trade" -> {
                             Trade trade = new Trade();

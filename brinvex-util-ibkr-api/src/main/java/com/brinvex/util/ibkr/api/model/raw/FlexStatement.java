@@ -17,6 +17,8 @@ public class FlexStatement implements Serializable {
 
     private ZonedDateTime whenGenerated;
 
+    private FlexStatementType type;
+
     private final List<CashTransaction> cashTransactions = new ArrayList<>();
 
     private final List<Trade> trades = new ArrayList<>();
@@ -73,6 +75,14 @@ public class FlexStatement implements Serializable {
         return equitySummaries;
     }
 
+    public FlexStatementType getType() {
+        return type;
+    }
+
+    public void setType(FlexStatementType type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", FlexStatement.class.getSimpleName() + "[", "]")
@@ -80,6 +90,7 @@ public class FlexStatement implements Serializable {
                 .add("fromDate=" + fromDate)
                 .add("toDate=" + toDate)
                 .add("whenGenerated=" + whenGenerated)
+                .add("type=" + type)
                 .add("cashTransactions=" + cashTransactions)
                 .add("trades=" + trades)
                 .add("tradeConfirms=" + tradeConfirms)
