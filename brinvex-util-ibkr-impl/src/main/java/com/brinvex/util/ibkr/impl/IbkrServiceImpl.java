@@ -341,8 +341,8 @@ public class IbkrServiceImpl implements IbkrService {
                     }
                 }
                 if (status == null || referenceCode == null || baseUrl2 == null || !status.equals("Success")) {
-                    throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s... -> status=%s, referenceCode=%s, baseUrl2=%s"
-                            .formatted(flexQueryId, tokenPrefix, status, referenceCode, baseUrl2));
+                    throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s, resp=%s"
+                            .formatted(flexQueryId, tokenPrefix, respBody1));
                 } else {
                     break;
                 }
@@ -355,7 +355,11 @@ public class IbkrServiceImpl implements IbkrService {
                 var resp2 = httpClient.send(req2, HttpResponse.BodyHandlers.ofString());
                 var respBody2 = resp2.body();
                 if (httpRespContainsRepeatableError(respBody2)) {
-                    continue;
+                    if (i < 9) {
+                        continue;
+                    }
+                    throw new IbkrServiceException("Fetch failed - flexQueryId=%s, token=%s, resp%s"
+                            .formatted(flexQueryId, tokenPrefix, respBody2));
                 }
                 return respBody2;
             }
