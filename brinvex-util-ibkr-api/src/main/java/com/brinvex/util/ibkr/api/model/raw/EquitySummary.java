@@ -19,6 +19,8 @@ public class EquitySummary implements Serializable {
 
     private BigDecimal dividendAccruals;
 
+    private BigDecimal interestAccruals;
+
     private BigDecimal total;
 
     public LocalDate getReportDate() {
@@ -61,6 +63,14 @@ public class EquitySummary implements Serializable {
         this.dividendAccruals = dividendAccruals;
     }
 
+    public BigDecimal getInterestAccruals() {
+        return interestAccruals;
+    }
+
+    public void setInterestAccruals(BigDecimal interestAccruals) {
+        this.interestAccruals = interestAccruals;
+    }
+
     public BigDecimal getTotal() {
         return total;
     }
@@ -78,6 +88,7 @@ public class EquitySummary implements Serializable {
                 .add("cash=" + cash)
                 .add("stock=" + stock)
                 .add("dividendAccruals=" + dividendAccruals)
+                .add("interestAccruals=" + interestAccruals)
                 .add("total=" + total)
                 .toString();
     }

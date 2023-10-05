@@ -132,6 +132,7 @@ public class FlexStatementXmlParser {
         static final QName cash = new QName("cash");
         static final QName stock = new QName("stock");
         static final QName dividendAccruals = new QName("dividendAccruals");
+        static final QName interestAccruals = new QName("interestAccruals");
         static final QName total = new QName("total");
     }
 
@@ -288,6 +289,7 @@ public class FlexStatementXmlParser {
                             equitySummary.setCash(new BigDecimal(e.getAttributeByName(EquitySummaryQN.cash).getValue()));
                             equitySummary.setStock(new BigDecimal(e.getAttributeByName(EquitySummaryQN.stock).getValue()));
                             equitySummary.setDividendAccruals(new BigDecimal(e.getAttributeByName(EquitySummaryQN.dividendAccruals).getValue()));
+                            equitySummary.setInterestAccruals(new BigDecimal(e.getAttributeByName(EquitySummaryQN.interestAccruals).getValue()));
                             equitySummary.setTotal(new BigDecimal(e.getAttributeByName(EquitySummaryQN.total).getValue()));
 
                             requireNonNull(flexStatement);
@@ -349,6 +351,7 @@ public class FlexStatementXmlParser {
             case "Withholding Tax" -> CashTransactionType.Withholding_Tax;
             case "Dividends" -> CashTransactionType.Dividends;
             case "Other Fees" -> CashTransactionType.Other_Fees;
+            case "Broker Interest Paid" -> CashTransactionType.Broker_Interest_Paid;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }
