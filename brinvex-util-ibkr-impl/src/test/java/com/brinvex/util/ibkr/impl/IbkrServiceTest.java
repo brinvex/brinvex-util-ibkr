@@ -51,17 +51,17 @@ class IbkrServiceTest {
     @Test
     void processStatements1() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("U029_Activity_20230101_20230726.xml"));
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
             Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
             assertNotNull(ptf);
 
             assertEquals(2, ptf.getCash().size());
-            assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("482.502129806")));
-            assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.2340287")));
+            assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("43.659223735")));
+            assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.402378700")));
 
-            assertEquals(13, ptf.getPositions().size());
+            assertEquals(15, ptf.getPositions().size());
         }
     }
 
