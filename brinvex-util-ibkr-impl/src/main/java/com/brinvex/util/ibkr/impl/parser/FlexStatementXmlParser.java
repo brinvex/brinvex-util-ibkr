@@ -56,6 +56,7 @@ public class FlexStatementXmlParser {
         static final QName description = new QName("description");
         static final QName symbol = new QName("symbol");
         static final QName listingExchange = new QName("listingExchange");
+        static final QName assetCategory = new QName("assetCategory");
         static final QName figi = new QName("figi");
         static final QName isin = new QName("isin");
         static final QName dateTime = new QName("dateTime");
@@ -169,7 +170,7 @@ public class FlexStatementXmlParser {
                         case "Trade" -> {
                             Trade trade = new Trade();
                             trade.setCurrency(Currency.valueOf(e.getAttributeByName(TradeQN.currency).getValue()));
-                            trade.setAssetCategory(AssetCategory.valueOf(e.getAttributeByName(TradeQN.assetCategory).getValue()));
+                            trade.setAssetCategory(parseAssetCategory(e.getAttributeByName(TradeQN.assetCategory).getValue()));
                             trade.setSymbol(e.getAttributeByName(TradeQN.symbol).getValue());
                             trade.setDescription(e.getAttributeByName(TradeQN.description).getValue());
                             trade.setSecurityID(e.getAttributeByName(TradeQN.securityID).getValue());
@@ -204,7 +205,7 @@ public class FlexStatementXmlParser {
                         case "TradeConfirm" -> {
                             TradeConfirm tradeConfirm = new TradeConfirm();
                             tradeConfirm.setCurrency(Currency.valueOf(e.getAttributeByName(TradeConfirmQN.currency).getValue()));
-                            tradeConfirm.setAssetCategory(AssetCategory.valueOf(e.getAttributeByName(TradeConfirmQN.assetCategory).getValue()));
+                            tradeConfirm.setAssetCategory(parseAssetCategory(e.getAttributeByName(TradeConfirmQN.assetCategory).getValue()));
                             tradeConfirm.setSymbol(e.getAttributeByName(TradeConfirmQN.symbol).getValue());
                             tradeConfirm.setDescription(e.getAttributeByName(TradeConfirmQN.description).getValue());
                             tradeConfirm.setSecurityID(e.getAttributeByName(TradeConfirmQN.securityID).getValue());
@@ -239,6 +240,7 @@ public class FlexStatementXmlParser {
                             cashTran.setCurrency(Currency.valueOf(e.getAttributeByName(CashTransactionQN.currency).getValue()));
                             cashTran.setSymbol(e.getAttributeByName(CashTransactionQN.symbol).getValue());
                             cashTran.setListingExchange(e.getAttributeByName(CashTransactionQN.listingExchange).getValue());
+                            cashTran.setAssetCategory(parseAssetCategory(e.getAttributeByName(CashTransactionQN.assetCategory).getValue()));
                             cashTran.setFigi(e.getAttributeByName(CashTransactionQN.figi).getValue());
                             cashTran.setIsin(e.getAttributeByName(CashTransactionQN.isin).getValue());
                             cashTran.setDescription(e.getAttributeByName(CashTransactionQN.description).getValue());
@@ -372,5 +374,10 @@ public class FlexStatementXmlParser {
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }
+
+    private AssetCategory parseAssetCategory(String assetCategoryStr) {
+        return assetCategoryStr == null || assetCategoryStr.isBlank() ? null : AssetCategory.valueOf(assetCategoryStr);
+    }
+
 
 }
