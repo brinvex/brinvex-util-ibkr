@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestHelper implements AutoCloseable {
 
-    private static final String TEST_DATA_FOLDER = "c:/prj/brinvex/brinvex-util/brinvex-util-ibkr/test-data";
+    private static final String TEST_DATA_FOLDER = "c:/prj/bx-util/bx-util-ibkr/test-data";
 
     private final Jsonb jsonb = JsonbBuilder.create();
 

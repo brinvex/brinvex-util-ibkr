@@ -20,6 +20,10 @@ public class Transaction implements Serializable {
 
     private String isin;
 
+    private String figi;
+
+    private AssetCategory assetCategory;
+
     private BigDecimal qty;
 
     private Currency currency;
@@ -76,6 +80,14 @@ public class Transaction implements Serializable {
 
     public void setSymbol(String symbol) {
         this.symbol = symbol;
+    }
+
+    public AssetCategory getAssetCategory() {
+        return assetCategory;
+    }
+
+    public void setAssetCategory(AssetCategory assetCategory) {
+        this.assetCategory = assetCategory;
     }
 
     public BigDecimal getQty() {
@@ -150,6 +162,14 @@ public class Transaction implements Serializable {
         this.isin = isin;
     }
 
+    public String getFigi() {
+        return figi;
+    }
+
+    public void setFigi(String figi) {
+        this.figi = figi;
+    }
+
     public String getBunchId() {
         return bunchId;
     }
@@ -167,6 +187,8 @@ public class Transaction implements Serializable {
                 .add("type=" + type)
                 .add("country=" + country)
                 .add("symbol='" + symbol + "'")
+                .add("assetCategory='" + assetCategory + "'")
+                .add("figi='" + figi + "'")
                 .add("isin='" + isin + "'")
                 .add("qty=" + qty)
                 .add("ccy=" + currency)

@@ -11,11 +11,11 @@ No transitive dependencies are required during compilation or at runtime.
 ````
 
 <repository>
-    <id>brinvex-mvnrepo</id>
-    <url>https://github.com/brinvex/brinvex-mvnrepo/raw/main/</url>
+    <id>repository.brinvex</id>
+    <name>Brinvex Repository</name>
+    <url>https://github.com/brinvex/brinvex-repo/raw/main/</url>
     <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
+        <enabled>false</enabled>
     </snapshots>
 </repository>
 

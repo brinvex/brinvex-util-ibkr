@@ -1,7 +1,7 @@
 package com.brinvex.util.ibkr.impl.parser;
 
 import com.brinvex.util.ibkr.api.model.Currency;
-import com.brinvex.util.ibkr.api.model.raw.AssetCategory;
+import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.raw.BuySell;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransactionType;
@@ -56,6 +56,7 @@ public class FlexStatementXmlParser {
         static final QName description = new QName("description");
         static final QName symbol = new QName("symbol");
         static final QName listingExchange = new QName("listingExchange");
+        static final QName figi = new QName("figi");
         static final QName isin = new QName("isin");
         static final QName dateTime = new QName("dateTime");
         static final QName settleDate = new QName("settleDate");
@@ -73,6 +74,7 @@ public class FlexStatementXmlParser {
         static final QName description = new QName("description");
         static final QName securityID = new QName("securityID");
         static final QName securityIDType = new QName("securityIDType");
+        static final QName figi = new QName("figi");
         static final QName isin = new QName("isin");
         static final QName listingExchange = new QName("listingExchange");
         static final QName tradeID = new QName("tradeID");
@@ -104,6 +106,7 @@ public class FlexStatementXmlParser {
         static final QName description = new QName("description");
         static final QName securityID = new QName("securityID");
         static final QName securityIDType = new QName("securityIDType");
+        static final QName figi = new QName("figi");
         static final QName isin = new QName("isin");
         static final QName listingExchange = new QName("listingExchange");
         static final QName tradeID = new QName("tradeID");
@@ -171,6 +174,7 @@ public class FlexStatementXmlParser {
                             trade.setDescription(e.getAttributeByName(TradeQN.description).getValue());
                             trade.setSecurityID(e.getAttributeByName(TradeQN.securityID).getValue());
                             trade.setSecurityIDType(parseSecurityIDType(e.getAttributeByName(TradeQN.securityIDType).getValue()));
+                            trade.setFigi(e.getAttributeByName(TradeQN.figi).getValue());
                             trade.setIsin(e.getAttributeByName(TradeQN.isin).getValue());
                             trade.setListingExchange(e.getAttributeByName(TradeQN.listingExchange).getValue());
                             trade.setTradeID(e.getAttributeByName(TradeQN.tradeID).getValue());
@@ -205,6 +209,7 @@ public class FlexStatementXmlParser {
                             tradeConfirm.setDescription(e.getAttributeByName(TradeConfirmQN.description).getValue());
                             tradeConfirm.setSecurityID(e.getAttributeByName(TradeConfirmQN.securityID).getValue());
                             tradeConfirm.setSecurityIDType(parseSecurityIDType(e.getAttributeByName(TradeConfirmQN.securityIDType).getValue()));
+                            tradeConfirm.setFigi(e.getAttributeByName(TradeConfirmQN.figi).getValue());
                             tradeConfirm.setIsin(e.getAttributeByName(TradeConfirmQN.isin).getValue());
                             tradeConfirm.setListingExchange(e.getAttributeByName(TradeConfirmQN.listingExchange).getValue());
                             tradeConfirm.setTradeID(e.getAttributeByName(TradeConfirmQN.tradeID).getValue());
@@ -234,6 +239,7 @@ public class FlexStatementXmlParser {
                             cashTran.setCurrency(Currency.valueOf(e.getAttributeByName(CashTransactionQN.currency).getValue()));
                             cashTran.setSymbol(e.getAttributeByName(CashTransactionQN.symbol).getValue());
                             cashTran.setListingExchange(e.getAttributeByName(CashTransactionQN.listingExchange).getValue());
+                            cashTran.setFigi(e.getAttributeByName(CashTransactionQN.figi).getValue());
                             cashTran.setIsin(e.getAttributeByName(CashTransactionQN.isin).getValue());
                             cashTran.setDescription(e.getAttributeByName(CashTransactionQN.description).getValue());
                             cashTran.setDateTime(parseTemporal(e.getAttributeByName(CashTransactionQN.dateTime).getValue()));

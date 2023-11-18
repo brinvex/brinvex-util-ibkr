@@ -1,11 +1,11 @@
 package com.brinvex.util.ibkr.api.model.raw;
 
+import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.Currency;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.StringJoiner;
 
@@ -22,6 +22,8 @@ public class Trade implements Activity, Serializable {
     private String securityID;
 
     private SecurityIDType securityIDType;
+
+    private String figi;
 
     private String isin;
 
@@ -121,6 +123,14 @@ public class Trade implements Activity, Serializable {
 
     public void setSecurityIDType(SecurityIDType securityIDType) {
         this.securityIDType = securityIDType;
+    }
+
+    public String getFigi() {
+        return figi;
+    }
+
+    public void setFigi(String figi) {
+        this.figi = figi;
     }
 
     public String getIsin() {
@@ -301,6 +311,7 @@ public class Trade implements Activity, Serializable {
                 .add("description='" + description + "'")
                 .add("securityID='" + securityID + "'")
                 .add("securityIDType=" + securityIDType)
+                .add("figi='" + figi + "'")
                 .add("isin='" + isin + "'")
                 .add("listingExchange='" + listingExchange + "'")
                 .add("tradeID='" + tradeID + "'")

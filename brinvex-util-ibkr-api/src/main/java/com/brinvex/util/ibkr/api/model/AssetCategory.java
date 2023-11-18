@@ -1,4 +1,4 @@
-package com.brinvex.util.ibkr.api.model.raw;
+package com.brinvex.util.ibkr.api.model;
 
 public enum AssetCategory {
 

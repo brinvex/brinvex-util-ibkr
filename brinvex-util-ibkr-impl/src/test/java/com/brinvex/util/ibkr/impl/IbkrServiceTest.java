@@ -66,30 +66,11 @@ class IbkrServiceTest {
     }
 
     @Test
-    void processStatements2() throws IOException {
-        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-        List<Path> activityReportPaths = testHelper.getTestFilePaths(
-                s -> s.contains("U029_TradeConfirm_20230726.xml") || s.contains("U029_Activity_20230101_20230726.xml"));
-        Portfolio ptf = null;
-        for (Path activityReportPath : activityReportPaths) {
-            String content = Files.readString(activityReportPath);
-            ptf = ibkrService.fillPortfolioFromStatements(ptf, Stream.of(content));
-        }
-        assertNotNull(ptf);
-
-        assertEquals(2, ptf.getCash().size());
-        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("482.502129806")));
-        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.2340287")));
-
-        assertEquals(13, ptf.getPositions().size());
-    }
-
-    @Test
     void processStatements3() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
-                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20230101_20230726.xml")),
-                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20230101_20230726.xml"))
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml")),
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20221118-20231117.xml"))
         );
         Portfolio ptf = null;
         for (Path activityReportPath : activityReportPaths) {
@@ -99,10 +80,10 @@ class IbkrServiceTest {
         assertNotNull(ptf);
 
         assertEquals(2, ptf.getCash().size());
-        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("482.502129806")));
-        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.2340287")));
+        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("722.811854405")));
+        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("183.601774170")));
 
-        assertEquals(13, ptf.getPositions().size());
+        assertEquals(23, ptf.getPositions().size());
     }
 
     @Test
@@ -125,7 +106,7 @@ class IbkrServiceTest {
     void parseEquitySummaries() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
-                testHelper.getTestFilePath(s -> s.contains("U029_Activity_20220802_20230801.xml"))
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml"))
         );
         FlexStatement flexStatement = ibkrService.parseEquitySummariesFromStatements(activityReportPaths);
         assertNotNull(flexStatement);
@@ -135,12 +116,12 @@ class IbkrServiceTest {
         assertEquals(0, equitySummaries.get(0).getTotal().compareTo(BigDecimal.ZERO));
 
         EquitySummary newestEquitySummary = equitySummaries.get(equitySummaries.size() - 1);
-        assertTrue(newestEquitySummary.getReportDate().isEqual(LocalDate.parse("2023-08-01")));
+        assertTrue(newestEquitySummary.getReportDate().isEqual(LocalDate.parse("2023-08-02")));
 
-        BigDecimal total = new BigDecimal("14937.395623791");
-        BigDecimal cash = new BigDecimal("260.616751991");
-        BigDecimal stock = new BigDecimal("14672.7549922");
-        BigDecimal dividendAccruals = new BigDecimal("4.0238796");
+        BigDecimal total = new BigDecimal("15899.966794514");
+        BigDecimal cash = new BigDecimal("44.027090414");
+        BigDecimal stock = new BigDecimal("15843.9724334");
+        BigDecimal dividendAccruals = new BigDecimal("11.9672707");
         assertEquals(0, newestEquitySummary.getCash().compareTo(cash));
         assertEquals(0, newestEquitySummary.getTotal().compareTo(total));
         assertEquals(0, newestEquitySummary.getStock().compareTo(stock));

@@ -35,7 +35,7 @@ import static java.lang.String.format;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 
-@SuppressWarnings({"GrazieInspection"})
+@SuppressWarnings({"GrazieInspection", "DuplicatedCode"})
 public class IbkrServiceImpl implements IbkrService {
 
     private final FlexStatementXmlParser flexStatementXmlParser;
