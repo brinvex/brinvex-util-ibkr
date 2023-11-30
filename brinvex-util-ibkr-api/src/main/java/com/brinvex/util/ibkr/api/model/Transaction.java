@@ -42,6 +42,8 @@ public class Transaction implements Serializable {
 
     private String bunchId;
 
+    private String description;
+
     public String getId() {
         return id;
     }
@@ -178,6 +180,13 @@ public class Transaction implements Serializable {
         this.bunchId = bunchId;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     @Override
     public String toString() {
@@ -199,6 +208,7 @@ public class Transaction implements Serializable {
                 .add("fees=" + fees)
                 .add("settleDate=" + settleDate)
                 .add("bunchId='" + bunchId + "'")
+                .add("description='" + description + "'")
                 .toString();
     }
 }

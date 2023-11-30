@@ -3,6 +3,7 @@ package com.brinvex.util.ibkr.impl;
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
+import com.brinvex.util.ibkr.api.model.raw.CorporateAction;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatementType;
@@ -112,6 +113,7 @@ public class IbkrServiceImpl implements IbkrService {
         TreeMap<String, CashTransaction> rawCashTrans = new TreeMap<>();
         TreeMap<String, Trade> rawTrades = new TreeMap<>();
         TreeMap<String, TradeConfirm> rawTradeConfirms = new TreeMap<>();
+        TreeMap<String, CorporateAction> rawCorpActions = new TreeMap<>();
 
         for (FlexStatement flexStatement : rawFlexStatements) {
             LocalDate fromDate = flexStatement.getFromDate();
@@ -145,11 +147,15 @@ public class IbkrServiceImpl implements IbkrService {
             for (TradeConfirm rawTradeConfirm : flexStatement.getTradeConfirms()) {
                 rawTradeConfirms.putIfAbsent(TranIdGenerator.getId(rawTradeConfirm), rawTradeConfirm);
             }
+            for (CorporateAction rawCorpAction : flexStatement.getCorporateActions()) {
+                rawCorpActions.putIfAbsent(TranIdGenerator.getId(rawCorpAction), rawCorpAction);
+            }
         }
 
         result.getCashTransactions().addAll(rawCashTrans.values());
         result.getTrades().addAll(rawTrades.values());
         result.getTradeConfirms().addAll(rawTradeConfirms.values());
+        result.getCorporateActions().addAll(rawCorpActions.values());
 
         return result;
     }
@@ -251,6 +257,7 @@ public class IbkrServiceImpl implements IbkrService {
         List<CashTransaction> rawCashTrans = flexStatement.getCashTransactions();
         List<Trade> rawTrades = flexStatement.getTrades();
         List<TradeConfirm> rawTradeConfirms = flexStatement.getTradeConfirms();
+        List<CorporateAction> rawCorpActions = flexStatement.getCorporateActions();
 
         String accountId = flexStatement.getAccountId();
         LocalDate periodFrom = flexStatement.getFromDate();
@@ -292,10 +299,14 @@ public class IbkrServiceImpl implements IbkrService {
         List<Transaction> newTradeConfirms = transactionMapper.mapTradeConfirms(tranIds, rawTradeConfirms);
         tranIds.addAll(newTradeConfirms.stream().map(Transaction::getId).toList());
 
+        List<Transaction> newCorpActions = transactionMapper.mapCorporateAction(tranIds, rawCorpActions);
+        tranIds.addAll(newTradeConfirms.stream().map(Transaction::getId).toList());
+
         List<Transaction> newTrans = new ArrayList<>();
         newTrans.addAll(newCashTrans);
         newTrans.addAll(newTrades);
         newTrans.addAll(newTradeConfirms);
+        newTrans.addAll(newCorpActions);
         newTrans.sort(comparing(Transaction::getId));
 
         for (Transaction newTran : newTrans) {

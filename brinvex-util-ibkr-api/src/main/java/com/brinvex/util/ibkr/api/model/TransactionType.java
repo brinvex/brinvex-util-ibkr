@@ -139,6 +139,16 @@ public enum TransactionType {
                     t -> t.getTax().compareTo(ZERO) < 0
             );
         }
+    },
+    TRANSFORMATION {
+        @Override
+        protected List<Predicate<Transaction>> predicates() {
+            return List.of(
+                    t -> t.getPrice().compareTo(ZERO) > 0,
+                    t -> t.getFees().compareTo(ZERO) == 0,
+                    t -> requireNonNullElse(t.getTax(), ZERO).compareTo(ZERO) == 0
+            );
+        }
     }
     ;
 

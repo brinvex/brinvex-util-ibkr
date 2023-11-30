@@ -70,7 +70,7 @@ public class CashTransaction implements Activity, Serializable {
 
     private LocalDateTime orderTime;
 
-    private String actionId;
+    private String actionID;
 
     private LocalDate settleDate;
 
@@ -309,12 +309,12 @@ public class CashTransaction implements Activity, Serializable {
     }
 
 
-    public String getActionId() {
-        return actionId;
+    public String getActionID() {
+        return actionID;
     }
 
-    public void setActionId(String actionId) {
-        this.actionId = actionId;
+    public void setActionID(String actionID) {
+        this.actionID = actionID;
     }
 
     public LocalDate getSettleDate() {
@@ -365,7 +365,7 @@ public class CashTransaction implements Activity, Serializable {
                 .add("transactionID='" + transactionID + "'")
                 .add("ibOrderID='" + ibOrderID + "'")
                 .add("orderTime=" + orderTime)
-                .add("actionId='" + actionId + "'")
+                .add("actionId='" + actionID + "'")
                 .add("settleDate=" + settleDate)
                 .add("amount=" + amount)
                 .toString();

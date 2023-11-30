@@ -5,6 +5,8 @@ import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.raw.BuySell;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransactionType;
+import com.brinvex.util.ibkr.api.model.raw.CorporateAction;
+import com.brinvex.util.ibkr.api.model.raw.CorporateActionType;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatementType;
@@ -129,6 +131,27 @@ public class FlexStatementXmlParser {
         static final QName orderID = new QName("orderID");
         static final QName orderTime = new QName("orderTime");
     }
+    private static class CorporateActionQN {
+        static final QName currency = new QName("currency");
+        static final QName assetCategory = new QName("assetCategory");
+        static final QName symbol = new QName("symbol");
+        static final QName description = new QName("description");
+        static final QName securityID = new QName("securityID");
+        static final QName securityIDType = new QName("securityIDType");
+        static final QName figi = new QName("figi");
+        static final QName isin = new QName("isin");
+        static final QName listingExchange = new QName("listingExchange");
+        static final QName issuerCountryCode = new QName("issuerCountryCode");
+        static final QName reportDate = new QName("reportDate");
+        static final QName dateTime = new QName("dateTime");
+        static final QName type = new QName("type");
+        static final QName quantity = new QName("quantity");
+        static final QName amount = new QName("amount");
+        static final QName proceeds = new QName("proceeds");
+        static final QName value = new QName("value");
+        static final QName transactionID = new QName("transactionID");
+        static final QName actionID = new QName("actionID");
+    }
 
     private static class EquitySummaryQN {
         static final QName currency = new QName("currency");
@@ -250,10 +273,35 @@ public class FlexStatementXmlParser {
                             cashTran.setType(parseCashTransactionType(e.getAttributeByName(CashTransactionQN.type).getValue()));
                             cashTran.setTransactionID(e.getAttributeByName(CashTransactionQN.transactionID).getValue());
                             cashTran.setReportDate(parseDate(e.getAttributeByName(CashTransactionQN.reportDate).getValue()));
-                            cashTran.setActionId(e.getAttributeByName(CashTransactionQN.actionID).getValue());
+                            cashTran.setActionID(e.getAttributeByName(CashTransactionQN.actionID).getValue());
 
                             requireNonNull(flexStatement);
                             flexStatement.getCashTransactions().add(cashTran);
+                        }
+                        case "CorporateAction" -> {
+                            CorporateAction corpAction = new CorporateAction();
+                            corpAction.setCurrency(Currency.valueOf(e.getAttributeByName(CorporateActionQN.currency).getValue()));
+                            corpAction.setAssetCategory(parseAssetCategory(e.getAttributeByName(CorporateActionQN.assetCategory).getValue()));
+                            corpAction.setSymbol(e.getAttributeByName(CorporateActionQN.symbol).getValue());
+                            corpAction.setDescription(e.getAttributeByName(CorporateActionQN.description).getValue());
+                            corpAction.setSecurityID(e.getAttributeByName(CorporateActionQN.securityID).getValue());
+                            corpAction.setSecurityIDType(parseSecurityIDType(e.getAttributeByName(CorporateActionQN.securityIDType).getValue()));
+                            corpAction.setFigi(e.getAttributeByName(CorporateActionQN.figi).getValue());
+                            corpAction.setIsin(e.getAttributeByName(CorporateActionQN.isin).getValue());
+                            corpAction.setListingExchange(e.getAttributeByName(CorporateActionQN.listingExchange).getValue());
+                            corpAction.setIssuerCountryCode(e.getAttributeByName(CorporateActionQN.issuerCountryCode).getValue());
+                            corpAction.setReportDate(parseDate(e.getAttributeByName(CorporateActionQN.reportDate).getValue()));
+                            corpAction.setDateTime(parseZonedDateTime(e.getAttributeByName(CorporateActionQN.dateTime).getValue()));
+                            corpAction.setType(parseCorporateActionType(e.getAttributeByName(CorporateActionQN.type).getValue()));
+                            corpAction.setQuantity(new BigDecimal(e.getAttributeByName(CorporateActionQN.quantity).getValue()));
+                            corpAction.setAmount(new BigDecimal(e.getAttributeByName(CorporateActionQN.amount).getValue()));
+                            corpAction.setProceeds(new BigDecimal(e.getAttributeByName(CorporateActionQN.proceeds).getValue()));
+                            corpAction.setValue(new BigDecimal(e.getAttributeByName(CorporateActionQN.value).getValue()));
+                            corpAction.setTransactionId(e.getAttributeByName(CorporateActionQN.transactionID).getValue());
+                            corpAction.setActionID(e.getAttributeByName(CorporateActionQN.actionID).getValue());
+
+                            requireNonNull(flexStatement);
+                            flexStatement.getCorporateActions().add(corpAction);
                         }
                     }
                 }
@@ -371,6 +419,17 @@ public class FlexStatementXmlParser {
         }
         return switch (str) {
             case "ExchTrade" -> TradeType.ExchTrade;
+            default -> throw new IllegalStateException("Unexpected value: " + str);
+        };
+    }
+
+    @SuppressWarnings("SwitchStatementWithTooFewBranches")
+    private CorporateActionType parseCorporateActionType(String str) {
+        if (str == null || str.isBlank()) {
+            return null;
+        }
+        return switch (str) {
+            case "TC" -> CorporateActionType.TC;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }

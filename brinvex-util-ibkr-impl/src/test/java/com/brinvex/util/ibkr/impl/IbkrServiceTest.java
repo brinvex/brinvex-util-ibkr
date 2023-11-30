@@ -87,6 +87,31 @@ class IbkrServiceTest {
     }
 
     @Test
+    void processStatements4() throws IOException {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = List.of(
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml")),
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20221130-20231129.xml"))
+        );
+        Portfolio ptf = null;
+        for (Path activityReportPath : activityReportPaths) {
+            String content = Files.readString(activityReportPath);
+            ptf = ibkrService.fillPortfolioFromStatements(ptf, Stream.of(content));
+        }
+        assertNotNull(ptf);
+
+        assertEquals(2, ptf.getCash().size());
+        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("722.811854405")));
+        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("1071.101774170")));
+        assertEquals(0, ptf.getPositions().stream()
+                .filter(p -> p.getSymbol().equals("VMW"))
+                .findFirst()
+                .orElseThrow().getQty().compareTo(BigDecimal.ZERO));
+
+        assertEquals(23, ptf.getPositions().size());
+    }
+
+    @Test
     void fetch() throws IOException {
         Path credentialsPath = testHelper.getTestFilePath(s -> s.contains("IBKR_Flex_credentials_LR"));
         if (credentialsPath != null) {

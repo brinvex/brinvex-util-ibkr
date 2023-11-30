@@ -27,6 +27,8 @@ public class FlexStatement implements Serializable {
 
     private final List<EquitySummary> equitySummaries = new ArrayList<>();
 
+    private final List<CorporateAction> corporateActions = new ArrayList<>();
+
     public String getAccountId() {
         return accountId;
     }
@@ -59,6 +61,14 @@ public class FlexStatement implements Serializable {
         this.whenGenerated = whenGenerated;
     }
 
+    public FlexStatementType getType() {
+        return type;
+    }
+
+    public void setType(FlexStatementType type) {
+        this.type = type;
+    }
+
     public List<CashTransaction> getCashTransactions() {
         return cashTransactions;
     }
@@ -75,12 +85,8 @@ public class FlexStatement implements Serializable {
         return equitySummaries;
     }
 
-    public FlexStatementType getType() {
-        return type;
-    }
-
-    public void setType(FlexStatementType type) {
-        this.type = type;
+    public List<CorporateAction> getCorporateActions() {
+        return corporateActions;
     }
 
     @Override
@@ -95,6 +101,7 @@ public class FlexStatement implements Serializable {
                 .add("trades=" + trades)
                 .add("tradeConfirms=" + tradeConfirms)
                 .add("equitySummaries=" + equitySummaries)
+                .add("corporateActions=" + corporateActions)
                 .toString();
     }
 }

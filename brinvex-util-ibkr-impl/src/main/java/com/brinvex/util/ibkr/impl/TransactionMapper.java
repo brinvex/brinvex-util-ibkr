@@ -23,12 +23,15 @@ import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.raw.BuySell;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CashTransactionType;
+import com.brinvex.util.ibkr.api.model.raw.CorporateAction;
+import com.brinvex.util.ibkr.api.model.raw.CorporateActionType;
 import com.brinvex.util.ibkr.api.model.raw.Trade;
 import com.brinvex.util.ibkr.api.model.raw.TradeConfirm;
 import com.brinvex.util.ibkr.api.model.raw.TradeType;
 import com.brinvex.util.ibkr.api.service.exception.IbkrServiceException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,11 +52,11 @@ public class TransactionMapper {
 
     public List<Transaction> mapCashTransactions(Set<String> oldTranIds, List<CashTransaction> rawCashTrans) {
         rawCashTrans = new ArrayList<>(rawCashTrans);
-        rawCashTrans.sort(comparing((CashTransaction ct) -> ct.getDateTime().toString()).thenComparing(CashTransaction::getTransactionID));
+        rawCashTrans.sort(comparing(TranIdGenerator::getId));
 
         Map<String, List<CashTransaction>> rawTransByActionId = new LinkedHashMap<>();
         for (CashTransaction rawTran : rawCashTrans) {
-            rawTransByActionId.computeIfAbsent(rawTran.getActionId(), k -> new ArrayList<>()).add(rawTran);
+            rawTransByActionId.computeIfAbsent(rawTran.getActionID(), k -> new ArrayList<>()).add(rawTran);
         }
 
         List<Transaction> resultTrans = new ArrayList<>();
@@ -90,7 +93,7 @@ public class TransactionMapper {
             } else if (rawType == CashTransactionType.Dividends) {
                 if (rawCashTran.getDescription().contains("CASH DIVIDEND")) {
 
-                    List<CashTransaction> dividendTaxTrans = rawTransByActionId.getOrDefault(rawCashTran.getActionId(), emptyList())
+                    List<CashTransaction> dividendTaxTrans = rawTransByActionId.getOrDefault(rawCashTran.getActionID(), emptyList())
                             .stream()
                             .filter(t -> t != rawCashTran)
                             .filter(t -> t.getType().equals(CashTransactionType.Withholding_Tax))
@@ -160,7 +163,7 @@ public class TransactionMapper {
             List<Trade> rawTrades
     ) {
         rawTrades = new ArrayList<>(rawTrades);
-        rawTrades.sort(comparing((Trade t) -> t.getDateTime().toString()).thenComparing(Trade::getTradeID));
+        rawTrades.sort(comparing(TranIdGenerator::getId));
 
         Map<String, List<Trade>> rawTradesByIbOrderId = new LinkedHashMap<>();
         for (Trade rawTran : rawTrades) {
@@ -294,6 +297,51 @@ public class TransactionMapper {
             tradeConfirmTrades.add(trade);
         }
         return mapTrades(oldTranIds, tradeConfirmTrades);
+    }
+
+    public List<Transaction> mapCorporateAction(
+            Set<String> oldTranIds,
+            List<CorporateAction> rawCorpActions
+    ) {
+        rawCorpActions = new ArrayList<>(rawCorpActions);
+        rawCorpActions.sort(comparing(TranIdGenerator::getId));
+
+        List<Transaction> resultTrans = new ArrayList<>();
+        Set<String> newTranIds = new HashSet<>();
+        for (CorporateAction rawCorpAction : rawCorpActions) {
+            String tranId = TranIdGenerator.getId(rawCorpAction);
+            if (!newTranIds.add(tranId)) {
+                throw new IbkrServiceException("ID collision: %s, %s".formatted(tranId, rawCorpAction));
+            }
+            var ccy = rawCorpAction.getCurrency();
+            var dateTime = rawCorpAction.getDateTime();
+
+            if (rawCorpAction.getDescription().contains("MERGED(Acquisition)") && rawCorpAction.getType().equals(CorporateActionType.TC)) {
+                Transaction tran = new Transaction();
+                tran.setId(tranId);
+                tran.setDate(dateTime);
+                tran.setType(TransactionType.TRANSFORMATION);
+                tran.setCountry(Country.valueOf(rawCorpAction.getIssuerCountryCode()));
+                tran.setSymbol(stripToNull(rawCorpAction.getSymbol()));
+                tran.setIsin(stripToNull(rawCorpAction.getIsin()));
+                tran.setFigi(stripToNull(rawCorpAction.getFigi()));
+                tran.setAssetCategory(rawCorpAction.getAssetCategory());
+                tran.setCurrency(ccy);
+                tran.setQty(rawCorpAction.getQuantity());
+                tran.setPrice(rawCorpAction.getProceeds().divide(rawCorpAction.getQuantity().abs(), 2, RoundingMode.HALF_UP));
+                tran.setGrossValue(rawCorpAction.getProceeds());
+                tran.setNetValue(rawCorpAction.getProceeds());
+                tran.setTax(ZERO);
+                tran.setFees(ZERO);
+                tran.setSettleDate(rawCorpAction.getReportDate());
+                tran.setBunchId(null);
+                tran.setDescription(rawCorpAction.getDescription());
+                resultTrans.add(tran);
+            } else {
+                throw new IbkrServiceException("Not yet implemented rawCorpAction=%s".formatted(rawCorpAction));
+            }
+        }
+        return resultTrans.stream().filter(t -> !oldTranIds.contains(t.getId())).toList();
     }
 
     private Country detectCountryByExchange(String listingExchange) {
