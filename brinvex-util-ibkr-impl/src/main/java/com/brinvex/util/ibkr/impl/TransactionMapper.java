@@ -347,7 +347,7 @@ public class TransactionMapper {
     private Country detectCountryByExchange(String listingExchange) {
         return listingExchange == null || listingExchange.isBlank() ? null : switch (listingExchange) {
             case "NYSE", "NASDAQ" -> Country.US;
-            case "IBIS" -> Country.DE;
+            case "IBIS", "IBIS2" -> Country.DE;
             default -> throw new IllegalStateException("Unexpected value: " + listingExchange);
         };
     }
