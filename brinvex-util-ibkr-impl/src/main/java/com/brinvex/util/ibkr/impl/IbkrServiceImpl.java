@@ -329,9 +329,10 @@ public class IbkrServiceImpl implements IbkrService {
             for (int i = 0; i < 10; i++) {
                 var req1 = HttpRequest.newBuilder(URI.create(flexQueryUrl.formatted(token, flexQueryId))).build();
                 var resp1 = httpClient.send(req1, HttpResponse.BodyHandlers.ofString());
+                int statusCode1 = resp1.statusCode();
                 var respBody1 = resp1.body();
 
-                if (httpRespContainsRepeatableError(respBody1)) {
+                if (httpRespContainsRepeatableError(statusCode1, respBody1)) {
                     Thread.sleep(i * 2000);
                     continue;
                 }
@@ -359,13 +360,14 @@ public class IbkrServiceImpl implements IbkrService {
                 }
             }
 
+            var url2 = baseUrl2 + ("?q=%s&t=%s&v=3".formatted(referenceCode, token));
+            var req2 = HttpRequest.newBuilder(URI.create(url2)).build();
             for (int i = 0; i < 10; i++) {
                 Thread.sleep(i * 1000 + 1000);
-                var url2 = baseUrl2 + ("?q=%s&t=%s&v=3".formatted(referenceCode, token));
-                var req2 = HttpRequest.newBuilder(URI.create(url2)).build();
                 var resp2 = httpClient.send(req2, HttpResponse.BodyHandlers.ofString());
+                int statusCode2 = resp2.statusCode();
                 var respBody2 = resp2.body();
-                if (httpRespContainsRepeatableError(respBody2)) {
+                if (httpRespContainsRepeatableError(statusCode2, respBody2)) {
                     if (i < 9) {
                         continue;
                     }
@@ -384,7 +386,7 @@ public class IbkrServiceImpl implements IbkrService {
     }
 
     @SuppressWarnings("RedundantIfStatement")
-    private boolean httpRespContainsRepeatableError(String respBody2) {
+    private boolean httpRespContainsRepeatableError(int respStatusCode, String respBody) {
         /*
         <FlexStatementResponse timestamp='26 July, 2023 05:45 AM EDT'>
             <Status>Warn</Status>
@@ -392,7 +394,7 @@ public class IbkrServiceImpl implements IbkrService {
             <ErrorMessage>Statement generation in progress. Please try again shortly.</ErrorMessage>
         </FlexStatementResponse>
          */
-        if (respBody2.contains("<ErrorCode>1019</ErrorCode>")) {
+        if (respBody.contains("<ErrorCode>1019</ErrorCode>")) {
             return true;
         }
 
@@ -403,9 +405,14 @@ public class IbkrServiceImpl implements IbkrService {
             <ErrorMessage>Too many requests have been made from this token. Please try again shortly.</ErrorMessage>
         </FlexStatementResponse>
          */
-        if (respBody2.contains("<ErrorCode>1018</ErrorCode>")) {
+        if (respBody.contains("<ErrorCode>1018</ErrorCode>")) {
             return true;
         }
+
+        if (respStatusCode == 500 && respBody.contains("We are sorry, our services are temporarily unavailable")) {
+            return true;
+        }
+
         return false;
     }
 
