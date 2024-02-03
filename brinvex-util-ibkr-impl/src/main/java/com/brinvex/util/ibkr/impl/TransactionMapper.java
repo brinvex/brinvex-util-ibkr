@@ -101,6 +101,26 @@ public class TransactionMapper {
                     CashTransaction dividendTaxTran = switch (dividendTaxTrans.size()) {
                         case 0 -> null;
                         case 1 -> dividendTaxTrans.get(0);
+                        case 3 -> {
+                            /*
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" securityIDType="ISIN" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="-7.78" type="Withholding Tax" tradeID="" transactionID="644171144" reportDate="20231228"  actionID="129229958" subCategory="COMMON" figi="BBG000PD6X77" />
+                        	<CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" securityIDType="ISIN" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="7.78" type="Withholding Tax" tradeID="" transactionID="667043504" reportDate="20240201"  actionID="129229958" subCategory="COMMON" figi="BBG000PD6X77" />
+	                        <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" securityIDType="ISIN" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="-7.71" type="Withholding Tax" tradeID="" transactionID="667043505" reportDate="20240201"  actionID="129229958" subCategory="COMMON" figi="BBG000PD6X77" />
+	                        <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 (Ordinary Dividend)" conid="31400554" securityID="US04010L1035" securityIDType="ISIN" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="51.84" type="Dividends" tradeID="" transactionID="644171143" reportDate="20231228"  actionID="129229958" subCategory="COMMON" figi="BBG000PD6X77" />
+                             */
+                            CashTransaction divTaxTran0 = dividendTaxTrans.get(0);
+                            CashTransaction divTaxTran1 = dividendTaxTrans.get(1);
+                            CashTransaction divTran2 = dividendTaxTrans.get(2);
+                            if (divTaxTran0.getSettleDate().isEqual(divTaxTran1.getSettleDate())
+                                && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
+                            ) {
+                                rawTransToSkip.add(divTaxTran0);
+                                rawTransToSkip.add(divTaxTran1);
+                                yield divTran2;
+                            }
+                            throw new IllegalStateException("Unexpected dividendTaxTrans: #%s, %s".formatted(
+                                    dividendTaxTrans.size(), dividendTaxTrans));
+                        }
                         default -> throw new IllegalStateException("Unexpected value: " + dividendTaxTrans.size());
                     };
                     assertTrue(fees.compareTo(ZERO) == 0);
