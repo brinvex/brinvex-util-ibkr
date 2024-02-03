@@ -6,7 +6,7 @@
 
     <groupId>com.brinvex.util</groupId>
     <artifactId>brinvex-util-ibkr</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2</version>
     <packaging>pom</packaging>
 
     <name>Brinvex-Util-IBKR</name>
