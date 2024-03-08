@@ -22,12 +22,12 @@ No transitive dependencies are required during compilation or at runtime.
 <dependency>
     <groupId>com.brinvex.util</groupId>
     <artifactId>brinvex-util-ibkr-api</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
 </dependency>
 <dependency>
     <groupId>com.brinvex.util</groupId>
     <artifactId>brinvex-util-ibkr-impl</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
     <scope>runtime</scope>
 </dependency>
 ````
@@ -38,3 +38,18 @@ No transitive dependencies are required during compilation or at runtime.
 ### License
 
 - The _Brinvex-Util-IBKR_ is released under version 2.0 of the Apache License.
+
+## Some of our experiences with the Interactive Brokers 
+
+#####  Symbol Discrepancy in Stock Position
+- 2024-02-17
+- _I am writing to bring to your attention a discrepancy in the display symbols for my stock position in the German company Siemens (ISIN: DE0007236101), which was purchased on IBIS.
+Currently, in TWS and on the Portfolio screen of the IB web application, the symbol for this position is displayed as "SIE." However, in the report statements, including flex statements, the symbol is listed as "SIEd." This inconsistency is causing some confusion and inconvenience for me.
+I would greatly appreciate your assistance in standardizing the symbol representation for this Siemens stock position. Ideally, I would like to see "SIE" consistently across all platforms and reports.
+Could you please provide guidance on how I can achieve this uniformity? Your prompt attention to this matter is highly appreciated._
+
+  - Answer from IBKR Support Center:
+  
+     _Please be advised that it might happen that symbol differs between what you can see in TWS or Portfolio and Statements - it is caused by the symbol used on a primary exchange, which is always displayed in the statements. However, if the ISIN and other details are the same it means that it is the same product. It is designed by default._
+
+

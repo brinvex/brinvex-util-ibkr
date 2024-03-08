@@ -123,6 +123,17 @@ class IbkrServiceTest {
     }
 
     @Test
+    void processStatements5() throws IOException {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-E-20230215-20240214.xml"));
+        for (Path activityReportPath : activityReportPaths) {
+            String content = Files.readString(activityReportPath);
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
+            assertNotNull(ptf);
+        }
+    }
+
+    @Test
     void fetch() throws IOException {
         Path credentialsPath = testHelper.getTestFilePath(s -> s.contains("IBKR_Flex_credentials_LR"));
         if (credentialsPath != null) {

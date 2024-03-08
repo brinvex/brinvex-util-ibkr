@@ -121,6 +121,35 @@ public class TransactionMapper {
                             throw new IllegalStateException("Unexpected dividendTaxTrans: #%s, %s".formatted(
                                     dividendTaxTrans.size(), dividendTaxTrans));
                         }
+                        case 5 -> {
+                            /*
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="-7.78" type="Withholding Tax" tradeID="" code="" transactionID="644171144" reportDate="20231228" clientReference="" actionID="129229958"  subCategory="COMMON" figi="BBG000PD6X77" />
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="7.78" type="Withholding Tax" tradeID="" code="" transactionID="667043504" reportDate="20240201" clientReference="" actionID="129229958"  subCategory="COMMON" figi="BBG000PD6X77" />
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="-7.71" type="Withholding Tax" tradeID="" code="" transactionID="667043505" reportDate="20240201" clientReference="" actionID="129229958"  subCategory="COMMON" figi="BBG000PD6X77" />
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="7.71" type="Withholding Tax" tradeID="" code="" transactionID="676687895" reportDate="20240214" clientReference="" actionID="129229958"  subCategory="COMMON" figi="BBG000PD6X77" />
+                            <CashTransaction assetCategory="STK" symbol="ARCC" description="ARCC (US04010L1035) CASH DIVIDEND USD 0.48 - US TAX" conid="31400554" securityID="US04010L1035" cusip="04010L103" isin="US04010L1035" dateTime="20231228;202000 EST" settleDate="20231228" amount="-0.69" type="Withholding Tax" tradeID="" code="" transactionID="676687896" reportDate="20240214" clientReference="" actionID="129229958"  subCategory="COMMON" figi="BBG000PD6X77" />
+                             */
+                            CashTransaction divTaxTran0 = dividendTaxTrans.get(0);
+                            CashTransaction divTaxTran1 = dividendTaxTrans.get(1);
+                            CashTransaction divTaxTran2 = dividendTaxTrans.get(2);
+                            CashTransaction divTaxTran3 = dividendTaxTrans.get(3);
+                            CashTransaction divTran4 = dividendTaxTrans.get(4);
+                            if (divTaxTran0.getSettleDate().isEqual(divTaxTran1.getSettleDate())
+                                && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
+
+                                && divTaxTran2.getSettleDate().isEqual(divTaxTran0.getSettleDate())
+                                && divTaxTran2.getSettleDate().isEqual(divTaxTran3.getSettleDate())
+                                && divTaxTran2.getAmount().negate().compareTo(divTaxTran3.getAmount()) == 0
+                            ) {
+                                rawTransToSkip.add(divTaxTran0);
+                                rawTransToSkip.add(divTaxTran1);
+                                rawTransToSkip.add(divTaxTran2);
+                                rawTransToSkip.add(divTaxTran3);
+                                yield divTran4;
+                            }
+                            throw new IllegalStateException("Unexpected dividendTaxTrans: #%s, %s".formatted(
+                                    dividendTaxTrans.size(), dividendTaxTrans));
+                        }
                         default -> throw new IllegalStateException("Unexpected value: " + dividendTaxTrans.size());
                     };
                     assertTrue(fees.compareTo(ZERO) == 0);
