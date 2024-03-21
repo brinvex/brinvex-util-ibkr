@@ -98,9 +98,8 @@ public class Transaction implements Serializable {
         return assetSubCategory;
     }
 
-    public Transaction setAssetSubCategory(AssetSubCategory assetSubCategory) {
+    public void setAssetSubCategory(AssetSubCategory assetSubCategory) {
         this.assetSubCategory = assetSubCategory;
-        return this;
     }
 
     public BigDecimal getQty() {

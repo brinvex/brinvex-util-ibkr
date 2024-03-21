@@ -96,9 +96,8 @@ public class TradeConfirm implements Activity, Serializable {
         return assetSubCategory;
     }
 
-    public TradeConfirm setAssetSubCategory(AssetSubCategory assetSubCategory) {
+    public void setAssetSubCategory(AssetSubCategory assetSubCategory) {
         this.assetSubCategory = assetSubCategory;
-        return this;
     }
 
     public String getSymbol() {

@@ -1,6 +1,7 @@
 package com.brinvex.util.ibkr.api.model.raw;
 
 import com.brinvex.util.ibkr.api.model.AssetCategory;
+import com.brinvex.util.ibkr.api.model.AssetSubCategory;
 import com.brinvex.util.ibkr.api.model.Currency;
 
 import java.io.Serializable;
@@ -17,6 +18,8 @@ public class CashTransaction implements Activity, Serializable {
     private Currency currency;
 
     private AssetCategory assetCategory;
+
+    private AssetSubCategory assetSubCategory;
 
     private String symbol;
 
@@ -98,6 +101,14 @@ public class CashTransaction implements Activity, Serializable {
 
     public void setAssetCategory(AssetCategory assetCategory) {
         this.assetCategory = assetCategory;
+    }
+
+    public AssetSubCategory getAssetSubCategory() {
+        return assetSubCategory;
+    }
+
+    public void setAssetSubCategory(AssetSubCategory assetSubCategory) {
+        this.assetSubCategory = assetSubCategory;
     }
 
     public String getSymbol() {
@@ -339,6 +350,7 @@ public class CashTransaction implements Activity, Serializable {
                 .add("dateTime=" + dateTime)
                 .add("currency=" + currency)
                 .add("assetCategory=" + assetCategory)
+                .add("assetSubCategory=" + assetSubCategory)
                 .add("symbol='" + symbol + "'")
                 .add("description='" + description + "'")
                 .add("securityID='" + securityID + "'")

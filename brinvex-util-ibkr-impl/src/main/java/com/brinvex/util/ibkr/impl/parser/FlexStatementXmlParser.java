@@ -60,6 +60,7 @@ public class FlexStatementXmlParser {
         static final QName symbol = new QName("symbol");
         static final QName listingExchange = new QName("listingExchange");
         static final QName assetCategory = new QName("assetCategory");
+        static final QName subCategory = new QName("subCategory");
         static final QName figi = new QName("figi");
         static final QName isin = new QName("isin");
         static final QName dateTime = new QName("dateTime");
@@ -270,6 +271,7 @@ public class FlexStatementXmlParser {
                             cashTran.setSymbol(e.getAttributeByName(CashTransactionQN.symbol).getValue());
                             cashTran.setListingExchange(e.getAttributeByName(CashTransactionQN.listingExchange).getValue());
                             cashTran.setAssetCategory(parseAssetCategory(e.getAttributeByName(CashTransactionQN.assetCategory).getValue()));
+                            cashTran.setAssetSubCategory(parseAssetSubCategory(cashTran.getAssetCategory(), e.getAttributeByName(CashTransactionQN.subCategory).getValue()));
                             cashTran.setFigi(e.getAttributeByName(CashTransactionQN.figi).getValue());
                             cashTran.setIsin(e.getAttributeByName(CashTransactionQN.isin).getValue());
                             cashTran.setDescription(e.getAttributeByName(CashTransactionQN.description).getValue());
@@ -446,8 +448,20 @@ public class FlexStatementXmlParser {
     }
 
     private AssetSubCategory parseAssetSubCategory(AssetCategory cat, String assetSubCategoryStr) {
-        return cat ==null || assetSubCategoryStr == null || assetSubCategoryStr.isBlank() ? null :
-                AssetSubCategory.valueOf(cat.name() + "_" + assetSubCategoryStr);
+        if (cat == null) {
+            if (assetSubCategoryStr != null && !assetSubCategoryStr.isBlank()) {
+                throw new IllegalArgumentException("Unexpected assetSubCategoryStr=" + assetSubCategoryStr);
+            }
+            return null;
+        }
+        if (cat == AssetCategory.CASH) {
+            if (assetSubCategoryStr != null && !assetSubCategoryStr.isBlank()) {
+                throw new IllegalArgumentException("Unexpected assetSubCategoryStr=" + assetSubCategoryStr);
+            }
+            return AssetSubCategory.CASH;
+        }
+        return assetSubCategoryStr == null || assetSubCategoryStr.isBlank() ?
+                null : AssetSubCategory.valueOf(cat.name() + "_" + assetSubCategoryStr);
     }
 
 

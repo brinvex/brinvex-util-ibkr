@@ -100,9 +100,8 @@ public class Trade implements Activity, Serializable {
         return assetSubCategory;
     }
 
-    public Trade setAssetSubCategory(AssetSubCategory assetSubCategory) {
+    public void setAssetSubCategory(AssetSubCategory assetSubCategory) {
         this.assetSubCategory = assetSubCategory;
-        return this;
     }
 
     public String getSymbol() {
