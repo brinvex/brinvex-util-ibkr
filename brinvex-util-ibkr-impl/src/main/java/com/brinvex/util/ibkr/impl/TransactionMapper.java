@@ -241,6 +241,7 @@ public class TransactionMapper {
                 tran.setCountry(detectCountryByExchange(rawTrade.getListingExchange()));
                 tran.setSymbol(stripToNull(rawTrade.getSymbol()));
                 tran.setAssetCategory(rawTrade.getAssetCategory());
+                tran.setAssetSubCategory(rawTrade.getAssetSubCategory());
                 tran.setFigi(stripToNull(rawTrade.getFigi()));
                 tran.setIsin(stripToNull(rawTrade.getIsin()));
                 tran.setCurrency(ccy);
@@ -375,6 +376,7 @@ public class TransactionMapper {
                 tran.setIsin(stripToNull(rawCorpAction.getIsin()));
                 tran.setFigi(stripToNull(rawCorpAction.getFigi()));
                 tran.setAssetCategory(rawCorpAction.getAssetCategory());
+                tran.setAssetSubCategory(rawCorpAction.getAssetSubCategory());
                 tran.setCurrency(ccy);
                 tran.setQty(rawCorpAction.getQuantity());
                 tran.setPrice(rawCorpAction.getProceeds().divide(rawCorpAction.getQuantity().abs(), 2, RoundingMode.HALF_UP));

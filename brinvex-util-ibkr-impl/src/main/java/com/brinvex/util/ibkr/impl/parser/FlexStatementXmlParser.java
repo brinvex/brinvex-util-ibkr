@@ -1,5 +1,6 @@
 package com.brinvex.util.ibkr.impl.parser;
 
+import com.brinvex.util.ibkr.api.model.AssetSubCategory;
 import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.raw.BuySell;
@@ -73,6 +74,7 @@ public class FlexStatementXmlParser {
     private static class TradeQN {
         static final QName currency = new QName("currency");
         static final QName assetCategory = new QName("assetCategory");
+        static final QName subCategory = new QName("subCategory");
         static final QName symbol = new QName("symbol");
         static final QName description = new QName("description");
         static final QName securityID = new QName("securityID");
@@ -105,6 +107,7 @@ public class FlexStatementXmlParser {
     private static class TradeConfirmQN {
         static final QName currency = new QName("currency");
         static final QName assetCategory = new QName("assetCategory");
+        static final QName subCategory = new QName("subCategory");
         static final QName symbol = new QName("symbol");
         static final QName description = new QName("description");
         static final QName securityID = new QName("securityID");
@@ -134,6 +137,7 @@ public class FlexStatementXmlParser {
     private static class CorporateActionQN {
         static final QName currency = new QName("currency");
         static final QName assetCategory = new QName("assetCategory");
+        static final QName subCategory = new QName("subCategory");
         static final QName symbol = new QName("symbol");
         static final QName description = new QName("description");
         static final QName securityID = new QName("securityID");
@@ -194,6 +198,7 @@ public class FlexStatementXmlParser {
                             Trade trade = new Trade();
                             trade.setCurrency(Currency.valueOf(e.getAttributeByName(TradeQN.currency).getValue()));
                             trade.setAssetCategory(parseAssetCategory(e.getAttributeByName(TradeQN.assetCategory).getValue()));
+                            trade.setAssetSubCategory(parseAssetSubCategory(trade.getAssetCategory(), e.getAttributeByName(TradeQN.subCategory).getValue()));
                             trade.setSymbol(e.getAttributeByName(TradeQN.symbol).getValue());
                             trade.setDescription(e.getAttributeByName(TradeQN.description).getValue());
                             trade.setSecurityID(e.getAttributeByName(TradeQN.securityID).getValue());
@@ -229,6 +234,7 @@ public class FlexStatementXmlParser {
                             TradeConfirm tradeConfirm = new TradeConfirm();
                             tradeConfirm.setCurrency(Currency.valueOf(e.getAttributeByName(TradeConfirmQN.currency).getValue()));
                             tradeConfirm.setAssetCategory(parseAssetCategory(e.getAttributeByName(TradeConfirmQN.assetCategory).getValue()));
+                            tradeConfirm.setAssetSubCategory(parseAssetSubCategory(tradeConfirm.getAssetCategory(), e.getAttributeByName(TradeConfirmQN.subCategory).getValue()));
                             tradeConfirm.setSymbol(e.getAttributeByName(TradeConfirmQN.symbol).getValue());
                             tradeConfirm.setDescription(e.getAttributeByName(TradeConfirmQN.description).getValue());
                             tradeConfirm.setSecurityID(e.getAttributeByName(TradeConfirmQN.securityID).getValue());
@@ -282,6 +288,7 @@ public class FlexStatementXmlParser {
                             CorporateAction corpAction = new CorporateAction();
                             corpAction.setCurrency(Currency.valueOf(e.getAttributeByName(CorporateActionQN.currency).getValue()));
                             corpAction.setAssetCategory(parseAssetCategory(e.getAttributeByName(CorporateActionQN.assetCategory).getValue()));
+                            corpAction.setAssetSubCategory(parseAssetSubCategory(corpAction.getAssetCategory(), e.getAttributeByName(CorporateActionQN.subCategory).getValue()));
                             corpAction.setSymbol(e.getAttributeByName(CorporateActionQN.symbol).getValue());
                             corpAction.setDescription(e.getAttributeByName(CorporateActionQN.description).getValue());
                             corpAction.setSecurityID(e.getAttributeByName(CorporateActionQN.securityID).getValue());
@@ -436,6 +443,11 @@ public class FlexStatementXmlParser {
 
     private AssetCategory parseAssetCategory(String assetCategoryStr) {
         return assetCategoryStr == null || assetCategoryStr.isBlank() ? null : AssetCategory.valueOf(assetCategoryStr);
+    }
+
+    private AssetSubCategory parseAssetSubCategory(AssetCategory cat, String assetSubCategoryStr) {
+        return cat ==null || assetSubCategoryStr == null || assetSubCategoryStr.isBlank() ? null :
+                AssetSubCategory.valueOf(cat.name() + "_" + assetSubCategoryStr);
     }
 
 

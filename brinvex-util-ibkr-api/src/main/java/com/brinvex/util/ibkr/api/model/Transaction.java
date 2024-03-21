@@ -24,6 +24,8 @@ public class Transaction implements Serializable {
 
     private AssetCategory assetCategory;
 
+    private AssetSubCategory assetSubCategory;
+
     private BigDecimal qty;
 
     private Currency currency;
@@ -90,6 +92,15 @@ public class Transaction implements Serializable {
 
     public void setAssetCategory(AssetCategory assetCategory) {
         this.assetCategory = assetCategory;
+    }
+
+    public AssetSubCategory getAssetSubCategory() {
+        return assetSubCategory;
+    }
+
+    public Transaction setAssetSubCategory(AssetSubCategory assetSubCategory) {
+        this.assetSubCategory = assetSubCategory;
+        return this;
     }
 
     public BigDecimal getQty() {
@@ -197,6 +208,7 @@ public class Transaction implements Serializable {
                 .add("country=" + country)
                 .add("symbol='" + symbol + "'")
                 .add("assetCategory='" + assetCategory + "'")
+                .add("assetSubCategory='" + assetSubCategory + "'")
                 .add("figi='" + figi + "'")
                 .add("isin='" + isin + "'")
                 .add("qty=" + qty)
