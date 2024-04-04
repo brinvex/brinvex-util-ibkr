@@ -15,6 +15,7 @@
  */
 package com.brinvex.util.ibkr.impl;
 
+import com.brinvex.util.ibkr.api.model.AssetSubCategory;
 import com.brinvex.util.ibkr.api.model.Country;
 import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.Transaction;
@@ -160,6 +161,7 @@ public class TransactionMapper {
                     tran.setCountry(detectCountryByExchange(rawCashTran.getListingExchange()));
                     tran.setSymbol(stripToNull(rawCashTran.getSymbol()));
                     tran.setAssetCategory(rawCashTran.getAssetCategory());
+                    tran.setAssetSubCategory(rawCashTran.getAssetSubCategory());
                     tran.setFigi(stripToNull(rawCashTran.getFigi()));
                     tran.setIsin(stripToNull(rawCashTran.getIsin()));
                     tran.setCurrency(ccy);
@@ -189,6 +191,7 @@ public class TransactionMapper {
                 tran.setCountry(detectCountryByExchange(rawCashTran.getListingExchange()));
                 tran.setSymbol(stripToNull(rawCashTran.getSymbol()));
                 tran.setAssetCategory(rawCashTran.getAssetCategory());
+                tran.setAssetSubCategory(rawCashTran.getAssetSubCategory());
                 tran.setFigi(stripToNull(rawCashTran.getFigi()));
                 tran.setIsin(stripToNull(rawCashTran.getIsin()));
                 tran.setCurrency(ccy);
@@ -266,6 +269,7 @@ public class TransactionMapper {
                         tran.setDate(dateTime);
                         tran.setSymbol(buyCcy.name());
                         tran.setAssetCategory(AssetCategory.CASH);
+                        tran.setAssetSubCategory(AssetSubCategory.CASH);
                         tran.setCurrency(sellCcy);
                         tran.setType(TransactionType.FX_BUY);
                         tran.setQty(rawTrade.getProceeds());
@@ -291,6 +295,7 @@ public class TransactionMapper {
                         tran.setDate(dateTime);
                         tran.setSymbol(buyCcy.name());
                         tran.setAssetCategory(AssetCategory.CASH);
+                        tran.setAssetSubCategory(AssetSubCategory.CASH);
                         tran.setCurrency(ccy);
                         tran.setType(TransactionType.FX_BUY);
                         tran.setQty(rawTrade.getQuantity());
