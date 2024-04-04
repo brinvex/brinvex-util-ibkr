@@ -51,7 +51,7 @@ class IbkrServiceTest {
     @Test
     void processStatements1() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml"));
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-20220803-20230802.xml"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
             Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
@@ -68,7 +68,7 @@ class IbkrServiceTest {
     @Test
     void processStatements2() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-E-20230203-20240202.xml"));
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-20230203-20240202.xml"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
             Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
@@ -80,8 +80,8 @@ class IbkrServiceTest {
     void processStatements3() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
-                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml")),
-                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20221118-20231117.xml"))
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20220803-20230802.xml")),
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20221118-20231117.xml"))
         );
         Portfolio ptf = null;
         for (Path activityReportPath : activityReportPaths) {
@@ -101,8 +101,8 @@ class IbkrServiceTest {
     void processStatements4() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
-                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml")),
-                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20221130-20231129.xml"))
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20220803-20230802.xml")),
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20221130-20231129.xml"))
         );
         Portfolio ptf = null;
         for (Path activityReportPath : activityReportPaths) {
@@ -125,11 +125,30 @@ class IbkrServiceTest {
     @Test
     void processStatements5() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
-        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-E-20230215-20240214.xml"));
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s -> s.contains("Activity-LR-IBKR-20230215-20240214.xml"));
         for (Path activityReportPath : activityReportPaths) {
             String content = Files.readString(activityReportPath);
             Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(content));
             assertNotNull(ptf);
+        }
+    }
+
+    @Test
+    void processSpinoff() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        PortfolioManager ptfManager = new PortfolioManager();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230404-20240402.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertNotNull(ptf);
+            assertEquals(0, ptfManager.findPosition(ptf, "GE").getQty().compareTo(new BigDecimal(6)));
+            assertEquals(0, ptfManager.findPosition(ptf, "GEV").getQty().compareTo(new BigDecimal(1)));
+            assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("234.561374405")));
+            assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("153.48807417")));
         }
     }
 
@@ -144,8 +163,10 @@ class IbkrServiceTest {
             IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
             String activityStatement = ibkrService.fetchStatement(token, activityFlexQueryId);
             String tradeConfirmStatement = ibkrService.fetchStatement(token, tradeConfirmFlexQueryId);
-            Portfolio ptf = ibkrService.fillPortfolioFromStatements(Stream.of(activityStatement, tradeConfirmStatement));
-            assertNotNull(ptf);
+            FlexStatement activities = ibkrService.parseActivitiesFromStatements(Stream.of(activityStatement, tradeConfirmStatement));
+            assertNotNull(activities);
+            FlexStatement summaries = ibkrService.parseEquitySummariesFromStatements(Stream.of(activityStatement, tradeConfirmStatement));
+            assertNotNull(summaries);
         }
     }
 
@@ -153,7 +174,7 @@ class IbkrServiceTest {
     void parseEquitySummaries() throws IOException {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
-                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-E-20220803-20230802.xml"))
+                testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20220803-20230802.xml"))
         );
         FlexStatement flexStatement = ibkrService.parseEquitySummariesFromStatements(activityReportPaths);
         assertNotNull(flexStatement);

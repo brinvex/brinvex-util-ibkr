@@ -113,7 +113,7 @@ public class TransactionMapper {
                             CashTransaction divTaxTran1 = dividendTaxTrans.get(1);
                             CashTransaction divTran2 = dividendTaxTrans.get(2);
                             if (divTaxTran0.getSettleDate().isEqual(divTaxTran1.getSettleDate())
-                                && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
+                                    && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
                             ) {
                                 rawTransToSkip.add(divTaxTran0);
                                 rawTransToSkip.add(divTaxTran1);
@@ -136,11 +136,11 @@ public class TransactionMapper {
                             CashTransaction divTaxTran3 = dividendTaxTrans.get(3);
                             CashTransaction divTran4 = dividendTaxTrans.get(4);
                             if (divTaxTran0.getSettleDate().isEqual(divTaxTran1.getSettleDate())
-                                && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
+                                    && divTaxTran0.getAmount().negate().compareTo(divTaxTran1.getAmount()) == 0
 
-                                && divTaxTran2.getSettleDate().isEqual(divTaxTran0.getSettleDate())
-                                && divTaxTran2.getSettleDate().isEqual(divTaxTran3.getSettleDate())
-                                && divTaxTran2.getAmount().negate().compareTo(divTaxTran3.getAmount()) == 0
+                                    && divTaxTran2.getSettleDate().isEqual(divTaxTran0.getSettleDate())
+                                    && divTaxTran2.getSettleDate().isEqual(divTaxTran3.getSettleDate())
+                                    && divTaxTran2.getAmount().negate().compareTo(divTaxTran3.getAmount()) == 0
                             ) {
                                 rawTransToSkip.add(divTaxTran0);
                                 rawTransToSkip.add(divTaxTran1);
@@ -311,12 +311,39 @@ public class TransactionMapper {
                                 .formatted(ccy, ibCommissionCcy, rawTrade));
                     }
                 }
+            } else if (rawType == TradeType.FracShare && rawTrade.getAssetCategory() == AssetCategory.STK && rawTrade.getBuySell() == BuySell.SELL) {
+                assertTrue(rawTrade.getIbCommission().compareTo(ZERO) == 0);
+                BigDecimal grossValue = rawTrade.getProceeds();
+                assertTrue(grossValue.compareTo(ZERO) > 0);
+                assertTrue(grossValue.compareTo(rawTrade.getTradeMoney().negate()) == 0);
+                assertTrue(grossValue.compareTo(rawTrade.getNetCash()) == 0);
+                assertTrue(rawTrade.getTaxes().compareTo(ZERO) == 0);
+                Transaction tran = new Transaction();
+                tran.setId(tranId);
+                tran.setDate(dateTime);
+                tran.setSymbol(rawTrade.getSymbol());
+                tran.setCountry(detectCountryByExchange(rawTrade.getListingExchange()));
+                tran.setIsin(rawTrade.getIsin());
+                tran.setFigi(rawTrade.getFigi());
+                tran.setAssetCategory(AssetCategory.STK);
+                tran.setAssetSubCategory(AssetSubCategory.STK_COMMON);
+                tran.setCurrency(rawTrade.getCurrency());
+                tran.setType(TransactionType.SELL);
+                tran.setQty(rawTrade.getQuantity());
+                tran.setPrice(rawTrade.getTradePrice());
+                tran.setGrossValue(grossValue);
+                tran.setNetValue(grossValue);
+                tran.setFees(rawTrade.getIbCommission());
+                tran.setSettleDate(rawTrade.getSettleDateTarget());
+                tran.setBunchId(bunchId);
+                resultTrans.add(tran);
             } else {
                 throw new IbkrServiceException("Not yet implemented tran=%s".formatted(rawTrade));
             }
         }
         return resultTrans.stream().filter(t -> !oldTranIds.contains(t.getId())).toList();
     }
+
     public List<Transaction> mapTradeConfirms(
             Set<String> oldTranIds,
             List<TradeConfirm> rawTradeConfirms
@@ -387,6 +414,31 @@ public class TransactionMapper {
                 tran.setPrice(rawCorpAction.getProceeds().divide(rawCorpAction.getQuantity().abs(), 2, RoundingMode.HALF_UP));
                 tran.setGrossValue(rawCorpAction.getProceeds());
                 tran.setNetValue(rawCorpAction.getProceeds());
+                tran.setTax(ZERO);
+                tran.setFees(ZERO);
+                tran.setSettleDate(rawCorpAction.getReportDate());
+                tran.setBunchId(null);
+                tran.setDescription(rawCorpAction.getDescription());
+                resultTrans.add(tran);
+            } else if (rawCorpAction.getDescription().contains("SPINOFF") && rawCorpAction.getType().equals(CorporateActionType.SO)) {
+                assertTrue(rawCorpAction.getAmount().compareTo(ZERO) == 0);
+                assertTrue(rawCorpAction.getProceeds().compareTo(ZERO) == 0);
+                assertTrue(rawCorpAction.getValue().compareTo(ZERO) == 0);
+                Transaction tran = new Transaction();
+                tran.setId(tranId);
+                tran.setDate(dateTime);
+                tran.setType(TransactionType.TRANSFORMATION);
+                tran.setCountry(Country.valueOf(rawCorpAction.getIssuerCountryCode()));
+                tran.setSymbol(stripToNull(rawCorpAction.getSymbol()));
+                tran.setIsin(stripToNull(rawCorpAction.getIsin()));
+                tran.setFigi(stripToNull(rawCorpAction.getFigi()));
+                tran.setAssetCategory(rawCorpAction.getAssetCategory());
+                tran.setAssetSubCategory(rawCorpAction.getAssetSubCategory());
+                tran.setCurrency(ccy);
+                tran.setQty(rawCorpAction.getQuantity());
+                tran.setPrice(ZERO);
+                tran.setGrossValue(ZERO);
+                tran.setNetValue(ZERO);
                 tran.setTax(ZERO);
                 tran.setFees(ZERO);
                 tran.setSettleDate(rawCorpAction.getReportDate());

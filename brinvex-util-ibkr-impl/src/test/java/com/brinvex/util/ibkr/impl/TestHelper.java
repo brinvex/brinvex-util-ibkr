@@ -24,7 +24,9 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +55,14 @@ public class TestHelper implements AutoCloseable {
             throw new IllegalArgumentException(String.format("Expecting one file but found %s: %s", size, paths));
         }
         return paths.get(0);
+    }
+
+    public List<Path> getTestFilePaths(Collection<String> fileNames) {
+        return getTestFilePaths(f -> fileNames == null || fileNames.contains(f));
+    }
+
+    public List<Path> getTestFilePaths(String... fileNames) {
+        return getTestFilePaths(Set.of(fileNames));
     }
 
     public List<Path> getTestFilePaths(Predicate<String> fileNameFilter) {

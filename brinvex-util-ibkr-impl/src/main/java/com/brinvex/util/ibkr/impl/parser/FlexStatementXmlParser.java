@@ -428,16 +428,17 @@ public class FlexStatementXmlParser {
         }
         return switch (str) {
             case "ExchTrade" -> TradeType.ExchTrade;
+            case "FracShare" -> TradeType.FracShare;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }
 
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private CorporateActionType parseCorporateActionType(String str) {
         if (str == null || str.isBlank()) {
             return null;
         }
         return switch (str) {
+            case "SO" -> CorporateActionType.SO;
             case "TC" -> CorporateActionType.TC;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
