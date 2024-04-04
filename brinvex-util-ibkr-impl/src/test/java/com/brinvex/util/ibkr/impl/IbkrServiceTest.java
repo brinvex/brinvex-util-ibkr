@@ -2,6 +2,8 @@ package com.brinvex.util.ibkr.impl;
 
 import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.Portfolio;
+import com.brinvex.util.ibkr.api.model.Transaction;
+import com.brinvex.util.ibkr.api.model.TransactionType;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
 import com.brinvex.util.ibkr.api.model.raw.FlexStatement;
 import com.brinvex.util.ibkr.api.service.IbkrService;
@@ -149,6 +151,13 @@ class IbkrServiceTest {
             assertEquals(0, ptfManager.findPosition(ptf, "GEV").getQty().compareTo(new BigDecimal(1)));
             assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("234.561374405")));
             assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("153.48807417")));
+
+            Transaction transformationTran = ptf.getTransactions().get(215);
+            assertEquals(transformationTran.getType(), TransactionType.TRANSFORMATION);
+            assertEquals(transformationTran.getSymbol(), "GEV");
+            Transaction sellTran = ptf.getTransactions().get(216);
+            assertEquals(sellTran.getType(), TransactionType.SELL);
+            assertEquals(sellTran.getSymbol(), "GEV");
         }
     }
 
@@ -171,7 +180,7 @@ class IbkrServiceTest {
     }
 
     @Test
-    void parseEquitySummaries() throws IOException {
+    void parseEquitySummaries() {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = List.of(
                 testHelper.getTestFilePath(s -> s.contains("Activity-LR-IBKR-20220803-20230802.xml"))

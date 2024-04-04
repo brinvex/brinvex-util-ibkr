@@ -2,6 +2,7 @@ package com.brinvex.util.ibkr.impl;
 
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
+import com.brinvex.util.ibkr.api.model.TransactionType;
 import com.brinvex.util.ibkr.api.model.raw.CashTransaction;
 import com.brinvex.util.ibkr.api.model.raw.CorporateAction;
 import com.brinvex.util.ibkr.api.model.raw.EquitySummary;
@@ -22,6 +23,10 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -303,11 +308,19 @@ public class IbkrServiceImpl implements IbkrService {
         tranIds.addAll(newTradeConfirms.stream().map(Transaction::getId).toList());
 
         List<Transaction> newTrans = new ArrayList<>();
+        newTrans.addAll(newCorpActions);
         newTrans.addAll(newCashTrans);
         newTrans.addAll(newTrades);
         newTrans.addAll(newTradeConfirms);
-        newTrans.addAll(newCorpActions);
-        newTrans.sort(comparing(Transaction::getId));
+        newTrans.sort((t1, t2) -> {
+            int result;
+            if (t1.getDate() instanceof ZonedDateTime zdt1 && t2.getDate() instanceof ZonedDateTime zdt2) {
+                result = zdt1.compareTo(zdt2);
+            } else {
+                result = t1.getId().compareTo(t2.getId());
+            }
+            return result;
+        });
 
         for (Transaction newTran : newTrans) {
             ptfTrans.add(newTran);
