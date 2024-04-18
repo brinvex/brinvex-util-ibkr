@@ -1,5 +1,7 @@
 package com.brinvex.util.ibkr.impl;
 
+import com.brinvex.util.ibkr.api.model.AssetCategory;
+import com.brinvex.util.ibkr.api.model.AssetSubCategory;
 import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
@@ -176,6 +178,41 @@ class IbkrServiceTest {
             assertNotNull(activities);
             FlexStatement summaries = ibkrService.parseEquitySummariesFromStatements(Stream.of(activityStatement, tradeConfirmStatement));
             assertNotNull(summaries);
+        }
+    }
+
+    @Test
+    void parseTradeConfirm() {
+        Path testFilePath = testHelper.getTestFilePath(f -> f.equals("TradeConfirm-LR-IBKR-20240418.xml"));
+        if (testFilePath != null) {
+            IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+            FlexStatement activityStatement = ibkrService.parseActivitiesFromStatements(List.of(testFilePath));
+            assertNotNull(activityStatement);
+            activityStatement.getTradeConfirms().forEach(tc -> {
+                AssetCategory cat = tc.getAssetCategory();
+                AssetSubCategory subCat = tc.getAssetSubCategory();
+                assertTrue(
+                        AssetCategory.STK.equals(cat) && AssetSubCategory.STK_COMMON.equals(subCat) ||
+                        AssetCategory.CASH.equals(cat) && AssetSubCategory.CASH.equals(subCat)
+                );
+            });
+        }
+    }
+
+    @Test
+    void processTradeConfirm() {
+        Path testFilePath = testHelper.getTestFilePath(f -> f.equals("TradeConfirm-LR-IBKR-20240418.xml"));
+        if (testFilePath != null) {
+            IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(List.of(testFilePath));
+            assertNotNull(ptf);
+            ptf.getTransactions().forEach(t -> {
+                AssetCategory cat = t.getAssetCategory();
+                AssetSubCategory subCat = t.getAssetSubCategory();
+                boolean isCommonsStock = AssetCategory.STK.equals(cat) && AssetSubCategory.STK_COMMON.equals(subCat);
+                boolean isCash = AssetCategory.CASH.equals(cat) && AssetSubCategory.CASH.equals(subCat);
+                assertTrue(isCommonsStock || isCash);
+            });
         }
     }
 

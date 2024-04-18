@@ -353,6 +353,7 @@ public class TransactionMapper {
             Trade trade = new Trade();
             trade.setCurrency(rawTradeConfirm.getCurrency());
             trade.setAssetCategory(rawTradeConfirm.getAssetCategory());
+            trade.setAssetSubCategory(rawTradeConfirm.getAssetSubCategory());
             trade.setSymbol(rawTradeConfirm.getSymbol());
             trade.setDescription(rawTradeConfirm.getDescription());
             trade.setSecurityID(rawTradeConfirm.getSecurityID());
