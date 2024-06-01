@@ -2,7 +2,6 @@ package com.brinvex.util.ibkr.impl;
 
 import com.brinvex.util.ibkr.api.model.AssetCategory;
 import com.brinvex.util.ibkr.api.model.AssetSubCategory;
-import com.brinvex.util.ibkr.api.model.Currency;
 import com.brinvex.util.ibkr.api.model.Portfolio;
 import com.brinvex.util.ibkr.api.model.Transaction;
 import com.brinvex.util.ibkr.api.model.TransactionType;
@@ -22,6 +21,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.brinvex.util.ibkr.api.model.Currency.EUR;
+import static com.brinvex.util.ibkr.api.model.Currency.USD;
+import static java.math.RoundingMode.HALF_UP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,8 +64,8 @@ class IbkrServiceTest {
             assertNotNull(ptf);
 
             assertEquals(2, ptf.getCash().size());
-            assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("43.659223735")));
-            assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("0.402378700")));
+            assertEquals(0, ptf.getCash().get(EUR).compareTo(new BigDecimal("43.659223735")));
+            assertEquals(0, ptf.getCash().get(USD).compareTo(new BigDecimal("0.402378700")));
 
             assertEquals(15, ptf.getPositions().size());
         }
@@ -95,8 +97,8 @@ class IbkrServiceTest {
         assertNotNull(ptf);
 
         assertEquals(2, ptf.getCash().size());
-        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("722.811854405")));
-        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("183.601774170")));
+        assertEquals(0, ptf.getCash().get(EUR).compareTo(new BigDecimal("722.811854405")));
+        assertEquals(0, ptf.getCash().get(USD).compareTo(new BigDecimal("183.601774170")));
 
         assertEquals(23, ptf.getPositions().size());
     }
@@ -116,8 +118,8 @@ class IbkrServiceTest {
         assertNotNull(ptf);
 
         assertEquals(2, ptf.getCash().size());
-        assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("722.811854405")));
-        assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("1071.101774170")));
+        assertEquals(0, ptf.getCash().get(EUR).compareTo(new BigDecimal("722.811854405")));
+        assertEquals(0, ptf.getCash().get(USD).compareTo(new BigDecimal("1071.101774170")));
         assertEquals(0, ptf.getPositions().stream()
                 .filter(p -> p.getSymbol().equals("VMW"))
                 .findFirst()
@@ -151,8 +153,8 @@ class IbkrServiceTest {
             assertNotNull(ptf);
             assertEquals(0, ptfManager.findPosition(ptf, "GE").getQty().compareTo(new BigDecimal(6)));
             assertEquals(0, ptfManager.findPosition(ptf, "GEV").getQty().compareTo(new BigDecimal(1)));
-            assertEquals(0, ptf.getCash().get(Currency.EUR).compareTo(new BigDecimal("234.561374405")));
-            assertEquals(0, ptf.getCash().get(Currency.USD).compareTo(new BigDecimal("153.48807417")));
+            assertEquals(0, ptf.getCash().get(EUR).compareTo(new BigDecimal("234.561374405")));
+            assertEquals(0, ptf.getCash().get(USD).compareTo(new BigDecimal("153.48807417")));
 
             Transaction transformationTran = ptf.getTransactions().get(215);
             assertEquals(transformationTran.getType(), TransactionType.TRANSFORMATION);
@@ -162,6 +164,39 @@ class IbkrServiceTest {
             assertEquals(sellTran.getSymbol(), "GEV");
         }
     }
+
+    @Test
+    void validateCashBalance20240430() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230501-20240430.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertNotNull(ptf);
+            assertEquals(0, ptf.getCash().get(EUR).setScale(2, HALF_UP).compareTo(new BigDecimal("284.92")));
+            assertEquals(0, ptf.getCash().get(USD).setScale(2, HALF_UP).compareTo(new BigDecimal("164.64")));
+        }
+    }
+
+    @Test
+    void validateCashBalance20240531() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230602-20240531.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertNotNull(ptf);
+            assertEquals(0, ptf.getCash().get(EUR).setScale(2, HALF_UP).compareTo(new BigDecimal("130.13")));
+            assertEquals(0, ptf.getCash().get(USD).setScale(2, HALF_UP).compareTo(new BigDecimal("54.07")));
+        }
+    }
+
 
     @Test
     void fetch() throws IOException {
