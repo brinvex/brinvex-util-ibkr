@@ -417,11 +417,11 @@ public class FlexStatementXmlParser {
             case "Dividends" -> CashTransactionType.Dividends;
             case "Other Fees" -> CashTransactionType.Other_Fees;
             case "Broker Interest Paid" -> CashTransactionType.Broker_Interest_Paid;
+            case "Broker Fees" -> CashTransactionType.Broker_Fees;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }
 
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private TradeType parseTradeType(String str) {
         if (str == null || str.isBlank()) {
             return null;

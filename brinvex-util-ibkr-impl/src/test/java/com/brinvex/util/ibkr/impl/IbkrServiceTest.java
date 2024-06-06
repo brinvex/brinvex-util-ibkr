@@ -197,6 +197,22 @@ class IbkrServiceTest {
         }
     }
 
+    @Test
+    void validateCashBalance20240605() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230607-20240605.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertNotNull(ptf);
+            assertEquals(0, ptf.getCash().get(EUR).setScale(2, HALF_UP).compareTo(new BigDecimal("1090.13")));
+            assertEquals(0, ptf.getCash().get(USD).setScale(2, HALF_UP).compareTo(new BigDecimal("64.89")));
+        }
+    }
+
 
     @Test
     void fetch() throws IOException {

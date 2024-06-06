@@ -184,7 +184,7 @@ public class TransactionMapper {
                 } else {
                     throw new IbkrServiceException("Not yet implemented tran=%s".formatted(rawCashTran));
                 }
-            } else if (rawType == CashTransactionType.Other_Fees || rawType == CashTransactionType.Broker_Interest_Paid) {
+            } else if (rawType == CashTransactionType.Other_Fees || rawType == CashTransactionType.Broker_Interest_Paid || rawType == CashTransactionType.Broker_Fees) {
                 Transaction tran = new Transaction();
                 tran.setId(tranId);
                 tran.setDate(dateTime);

@@ -12,4 +12,6 @@ public enum CashTransactionType {
 
     Broker_Interest_Paid,
 
+    Broker_Fees,
+
 }
