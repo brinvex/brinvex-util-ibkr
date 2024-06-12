@@ -440,6 +440,7 @@ public class FlexStatementXmlParser {
         return switch (str) {
             case "SO" -> CorporateActionType.SO;
             case "TC" -> CorporateActionType.TC;
+            case "FS" -> CorporateActionType.FS;
             default -> throw new IllegalStateException("Unexpected value: " + str);
         };
     }

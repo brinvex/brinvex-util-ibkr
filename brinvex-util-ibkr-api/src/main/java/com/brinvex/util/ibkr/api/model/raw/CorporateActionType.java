@@ -12,4 +12,9 @@ public enum CorporateActionType {
      */
     SO,
 
+    /**
+     * Split
+     */
+    FS,
+
 }

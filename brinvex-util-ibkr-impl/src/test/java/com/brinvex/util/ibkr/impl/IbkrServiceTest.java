@@ -213,6 +213,22 @@ class IbkrServiceTest {
         }
     }
 
+    @Test
+    void validatePositions20240610() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230612-20240610.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertNotNull(ptf);
+            BigDecimal qty = ptf.getPositions().stream().filter(p -> p.getSymbol().equals("NVDA")).findFirst().orElseThrow().getQty();
+            assertEquals("60", qty.toString());
+        }
+    }
+
 
     @Test
     void fetch() throws IOException {

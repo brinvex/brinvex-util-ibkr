@@ -446,6 +446,31 @@ public class TransactionMapper {
                 tran.setBunchId(null);
                 tran.setDescription(rawCorpAction.getDescription());
                 resultTrans.add(tran);
+            } else if (rawCorpAction.getDescription().contains("SPLIT") && rawCorpAction.getType().equals(CorporateActionType.FS)) {
+                assertTrue(rawCorpAction.getAmount().compareTo(ZERO) == 0);
+                assertTrue(rawCorpAction.getProceeds().compareTo(ZERO) == 0);
+                assertTrue(rawCorpAction.getValue().compareTo(ZERO) == 0);
+                Transaction tran = new Transaction();
+                tran.setId(tranId);
+                tran.setDate(dateTime);
+                tran.setType(TransactionType.TRANSFORMATION);
+                tran.setCountry(Country.valueOf(rawCorpAction.getIssuerCountryCode()));
+                tran.setSymbol(stripToNull(rawCorpAction.getSymbol()));
+                tran.setIsin(stripToNull(rawCorpAction.getIsin()));
+                tran.setFigi(stripToNull(rawCorpAction.getFigi()));
+                tran.setAssetCategory(rawCorpAction.getAssetCategory());
+                tran.setAssetSubCategory(rawCorpAction.getAssetSubCategory());
+                tran.setCurrency(ccy);
+                tran.setQty(rawCorpAction.getQuantity());
+                tran.setPrice(ZERO);
+                tran.setGrossValue(ZERO);
+                tran.setNetValue(ZERO);
+                tran.setTax(ZERO);
+                tran.setFees(ZERO);
+                tran.setSettleDate(rawCorpAction.getReportDate());
+                tran.setBunchId(null);
+                tran.setDescription(rawCorpAction.getDescription());
+                resultTrans.add(tran);
             } else {
                 throw new IbkrServiceException("Not yet implemented rawCorpAction=%s".formatted(rawCorpAction));
             }
