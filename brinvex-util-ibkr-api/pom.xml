@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.brinvex.util</groupId>
         <artifactId>brinvex-util-ibkr</artifactId>
-        <version>1.9.4</version>
+        <version>1.9.5</version>
     </parent>
 
     <artifactId>brinvex-util-ibkr-api</artifactId>

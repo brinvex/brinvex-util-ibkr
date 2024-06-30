@@ -166,6 +166,24 @@ class IbkrServiceTest {
     }
 
     @Test
+    void processPaymentOfLieuOfDividends() {
+        IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
+        PortfolioManager ptfManager = new PortfolioManager();
+        List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
+                s.equals("Activity-LR-IBKR-20220803-20230802.xml") ||
+                        s.equals("Activity-LR-IBKR-20230630-20240628.xml")
+        );
+        if (!activityReportPaths.isEmpty()) {
+            Portfolio ptf = ibkrService.fillPortfolioFromStatements(activityReportPaths);
+
+            assertEquals(30,4, ptf.getTransactions().size());
+            Transaction tran = ptf.getTransactions().get(300);
+            assertEquals(tran.getType(), TransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS);
+            assertEquals(tran.getSymbol(), "ARCC");
+        }
+    }
+
+    @Test
     void validateCashBalance20240430() {
         IbkrService ibkrService = IbkrServiceFactory.INSTANCE.getIbkrService();
         List<Path> activityReportPaths = testHelper.getTestFilePaths(s ->
@@ -260,11 +278,12 @@ class IbkrServiceTest {
                 AssetSubCategory subCat = tc.getAssetSubCategory();
                 assertTrue(
                         AssetCategory.STK.equals(cat) && AssetSubCategory.STK_COMMON.equals(subCat) ||
-                        AssetCategory.CASH.equals(cat) && AssetSubCategory.CASH.equals(subCat)
+                                AssetCategory.CASH.equals(cat) && AssetSubCategory.CASH.equals(subCat)
                 );
             });
         }
     }
+
 
     @Test
     void processTradeConfirm() {

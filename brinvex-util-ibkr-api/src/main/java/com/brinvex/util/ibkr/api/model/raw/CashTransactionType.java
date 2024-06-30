@@ -6,6 +6,8 @@ public enum CashTransactionType {
 
     Dividends,
 
+    Payment_In_Lieu_Of_Dividends,
+
     Withholding_Tax,
 
     Other_Fees,

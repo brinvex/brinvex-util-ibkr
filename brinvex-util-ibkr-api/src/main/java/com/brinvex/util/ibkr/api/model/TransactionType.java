@@ -91,6 +91,20 @@ public enum TransactionType {
         }
     },
 
+    PAYMENT_IN_LIEU_OF_DIVIDENDS {
+        @Override
+        protected List<Predicate<Transaction>> predicates() {
+            return List.of(
+                    t -> t.getNetValue().compareTo(ZERO) > 0,
+                    t -> t.getSymbol() != null,
+                    t -> t.getQty().compareTo(ZERO) == 0,
+                    t -> t.getPrice() == null,
+                    t -> t.getFees().compareTo(ZERO) <= 0,
+                    t -> requireNonNullElse(t.getTax(), ZERO).compareTo(ZERO) <= 0
+            );
+        }
+    },
+
     FX_BUY {
         @Override
         protected List<Predicate<Transaction>> predicates() {

@@ -328,6 +328,7 @@ public class FlexStatementXmlParser {
 
     public FlexStatement parseEquitySummaries(String statementXmlContent) {
         FlexStatement flexStatement = null;
+        FlexStatementType flexStatementType = null;
         try {
             XMLEventReader reader = LazyHolder.xmlInputFactory.createXMLEventReader(new StringReader(statementXmlContent));
             while (reader.hasNext()) {
@@ -337,11 +338,15 @@ public class FlexStatementXmlParser {
                     String elementName = e.getName().getLocalPart();
 
                     switch (elementName) {
+                        case "FlexQueryResponse" -> {
+                            flexStatementType = FlexStatementType.valueOf(e.getAttributeByName(FlexQueryResponseQN.type).getValue());
+                        }
                         case "FlexStatement" -> {
                             if (flexStatement != null) {
                                 throw new IllegalArgumentException("Unexpected xml node FlexStatement");
                             }
                             flexStatement = new FlexStatement();
+                            flexStatement.setType(requireNonNull(flexStatementType));
                             flexStatement.setAccountId(e.getAttributeByName(FlexStatementQN.accountId).getValue());
                             flexStatement.setFromDate(parseDate(e.getAttributeByName(FlexStatementQN.fromDate).getValue()));
                             flexStatement.setToDate(parseDate(e.getAttributeByName(FlexStatementQN.toDate).getValue()));
@@ -415,6 +420,7 @@ public class FlexStatementXmlParser {
             case "Deposits/Withdrawals" -> CashTransactionType.Deposits_Withdrawals;
             case "Withholding Tax" -> CashTransactionType.Withholding_Tax;
             case "Dividends" -> CashTransactionType.Dividends;
+            case "Payment In Lieu Of Dividends" -> CashTransactionType.Payment_In_Lieu_Of_Dividends;
             case "Other Fees" -> CashTransactionType.Other_Fees;
             case "Broker Interest Paid" -> CashTransactionType.Broker_Interest_Paid;
             case "Broker Fees" -> CashTransactionType.Broker_Fees;

@@ -91,7 +91,7 @@ public class TransactionMapper {
                 tran.setFees(fees);
                 tran.setSettleDate(rawCashTran.getSettleDate());
                 resultTrans.add(tran);
-            } else if (rawType == CashTransactionType.Dividends) {
+            } else if (rawType == CashTransactionType.Dividends || rawType == CashTransactionType.Payment_In_Lieu_Of_Dividends) {
                 if (rawCashTran.getDescription().contains("CASH DIVIDEND")) {
 
                     List<CashTransaction> dividendTaxTrans = rawTransByActionId.getOrDefault(rawCashTran.getActionID(), emptyList())
@@ -165,7 +165,11 @@ public class TransactionMapper {
                     tran.setFigi(stripToNull(rawCashTran.getFigi()));
                     tran.setIsin(stripToNull(rawCashTran.getIsin()));
                     tran.setCurrency(ccy);
-                    tran.setType(TransactionType.CASH_DIVIDEND);
+                    tran.setType(switch (rawType) {
+                        case Dividends -> TransactionType.CASH_DIVIDEND;
+                        case Payment_In_Lieu_Of_Dividends -> TransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS;
+                        default -> throw new IllegalStateException("Unexpected value: " + rawType);
+                    });
                     tran.setGrossValue(rawCashTran.getAmount());
                     tran.setQty(ZERO);
                     tran.setFees(ZERO);
