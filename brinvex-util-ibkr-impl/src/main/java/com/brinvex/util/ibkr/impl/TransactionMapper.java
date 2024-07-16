@@ -92,7 +92,7 @@ public class TransactionMapper {
                 tran.setSettleDate(rawCashTran.getSettleDate());
                 resultTrans.add(tran);
             } else if (rawType == CashTransactionType.Dividends || rawType == CashTransactionType.Payment_In_Lieu_Of_Dividends) {
-                if (rawCashTran.getDescription().contains("CASH DIVIDEND")) {
+                if (rawCashTran.getDescription().contains("CASH DIVIDEND") || rawCashTran.getDescription().contains("PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)")) {
 
                     List<CashTransaction> dividendTaxTrans = rawTransByActionId.getOrDefault(rawCashTran.getActionID(), emptyList())
                             .stream()

@@ -22,12 +22,12 @@ No transitive dependencies are required during compilation or at runtime.
 <dependency>
     <groupId>com.brinvex.util</groupId>
     <artifactId>brinvex-util-ibkr-api</artifactId>
-    <version>1.9.5</version>
+    <version>1.9.6</version>
 </dependency>
 <dependency>
     <groupId>com.brinvex.util</groupId>
     <artifactId>brinvex-util-ibkr-impl</artifactId>
-    <version>1.9.5</version>
+    <version>1.9.6</version>
     <scope>runtime</scope>
 </dependency>
 ````
