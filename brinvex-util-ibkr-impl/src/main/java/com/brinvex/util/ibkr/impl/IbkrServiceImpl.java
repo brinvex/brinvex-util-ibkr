@@ -422,6 +422,17 @@ public class IbkrServiceImpl implements IbkrService {
             return true;
         }
 
+        /*
+        <FlexStatementResponse timestamp='06 August, 2024 05:01 AM EDT'>
+            <Status>Fail</Status>
+            <ErrorCode>1009</ErrorCode>
+            <ErrorMessage>The server is under heavy load. Statement could not be generated at this time. Please try again shortly.</ErrorMessage>
+        </FlexStatementResponse>
+         */
+        if (respBody.contains("<ErrorCode>1009</ErrorCode>")) {
+            return true;
+        }
+
         if (respStatusCode == 500 && respBody.contains("We are sorry, our services are temporarily unavailable")) {
             return true;
         }
